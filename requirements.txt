@@ -4,3 +4,4 @@ dropbox
 flask
 PyPDF2
 python-dotenv
+openai
