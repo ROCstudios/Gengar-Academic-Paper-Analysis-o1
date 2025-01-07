@@ -1,6 +1,7 @@
 import os
 import dotenv
 from openai import OpenAI
+import re
 
 dotenv.load_dotenv()
 
@@ -133,6 +134,10 @@ Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
 
 NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
 
+NEVER PRINT ``` or ```json in the final output
+
+ALWAYS ESCAPE SPECIAL CHARACTERS IN THE FINAL OUTPUT.  This is very important.
+
 HERE IS THE RESEARCH PAPER TO ANALYZE:
 """
 METHODICAL_ERROR_PROMPT = """
@@ -264,6 +269,10 @@ Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
 
 NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
 
+NEVER PRINT ``` or ```json in the final output
+
+ALWAYS ESCAPE SPECIAL CHARACTERS IN THE FINAL OUTPUT.  This is very important.
+
 HERE IS THE RESEARCH PAPER TO ANALYZE:
 """
 CALCULATIONL_ERROR_PROMPT = """
@@ -392,6 +401,10 @@ Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
   }
 
 NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
+
+NEVER PRINT ``` or ```json in the final output
+
+ALWAYS ESCAPE SPECIAL CHARACTERS IN THE FINAL OUTPUT.  This is very important.
 
 HERE IS THE RESEARCH PAPER TO ANALYZE:
 """
@@ -535,6 +548,10 @@ Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
 
 NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
 
+NEVER PRINT ``` or ```json in the final output
+
+ALWAYS ESCAPE SPECIAL CHARACTERS IN THE FINAL OUTPUT.  This is very important.
+
 ---
 
 **HERE IS THE RESEARCH PAPER TO ANALYZE:**
@@ -584,7 +601,7 @@ Do not include any other error categories (e.g., methodological, logical/concept
 Output in JSON
 Present your findings **exclusively** in the following JSON structure (add as many items as needed):
 
-```
+
 {
   "errors": [
     {
@@ -602,7 +619,6 @@ Present your findings **exclusively** in the following JSON structure (add as ma
   }
 }
 
-```
 
 ---
 
@@ -669,6 +685,10 @@ Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
   }
 
 NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
+
+NEVER PRINT ``` or ```json in the final output
+
+ALWAYS ESCAPE SPECIAL CHARACTERS IN THE FINAL OUTPUT.  This is very important.
 
 ---
 
@@ -811,6 +831,10 @@ Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
 
 NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
 
+NEVER PRINT ``` or ```json in the final output
+
+ALWAYS ESCAPE SPECIAL CHARACTERS IN THE FINAL OUTPUT.  This is very important.
+
 ---
 
 **HERE IS THE RESEARCH PAPER TO ANALYZE:**
@@ -946,6 +970,10 @@ Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
 
 NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
 
+NEVER PRINT ``` or ```json in the final output
+
+ALWAYS ESCAPE SPECIAL CHARACTERS IN THE FINAL OUTPUT.  This is very important.
+
 ---
 
 **HERE IS THE RESEARCH PAPER TO ANALYZE:**
@@ -1080,10 +1108,30 @@ Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
 
 NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
 
+NEVER PRINT ``` or ```json in the final output
+
+ALWAYS ESCAPE SPECIAL CHARACTERS IN THE FINAL OUTPUT.  This is very important.
+
 ---
 
 **HERE IS THE RESEARCH PAPER TO ANALYZE:**
 """
+
+def clean_json_string(json_str):
+    """Clean JSON string by removing control characters and escaping special characters"""
+    # Remove control characters
+    json_str = re.sub(r'[\x00-\x1F\x7F-\x9F]', '', json_str)
+    
+    # Extract just the JSON object (assuming it's between the first { and last })
+    try:
+        start = json_str.find('{')
+        end = json_str.rfind('}') + 1
+        if start >= 0 and end > 0:
+            json_str = json_str[start:end]
+    except:
+        pass
+        
+    return json_str
 
 def chat_with_gpt(
     model="o1-mini", 

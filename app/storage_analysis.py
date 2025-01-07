@@ -6,9 +6,10 @@ import pickle
 import os
 from pathlib import Path
 from analysis import AnalysisResult
-from completions import chat_with_gpt
-from analysis import extract_text_from_pdf
+from completions import chat_with_gpt, clean_json_string
+from analysis import extract_text_from_pdf  
 from analysis import LOGICAL_ERROR_PROMPT, METHODICAL_ERROR_PROMPT, CALCULATIONL_ERROR_PROMPT, DATA_ERROR_PROMPT, CITATION_ERROR_PROMPT, FORMATTING_ERROR_PROMPT, PLAGARISM_ERROR_PROMPT, ETHICAL_ERROR_PROMPT
+
 @dataclass
 class AnalysisMetadata:
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
@@ -41,7 +42,7 @@ class ComprehensiveAnalysis:
             self.ethical_analysis
         ]:
             if analysis and hasattr(analysis, 'summary'):
-                total += analysis.summary.errorCount
+                total += int(analysis.summary.errorCount)
         return total
 
     def to_dict(self) -> dict:
@@ -131,9 +132,12 @@ def analyze_pdfs(folder_path):
             ]
             
             for prompt, analysis_type in prompts_and_types:
+                completion = chat_with_gpt(prompt=prompt, pdf_content=text)
+                print("****")
+                print(completion)
+                print("****")
+                result = AnalysisResult.from_json(clean_json_string(completion))
                 try:
-                    completion = chat_with_gpt(prompt=prompt, pdf_content=text)
-                    result = AnalysisResult.from_json(completion)
                     storage.collection.add_analysis(file, analysis_type, result)
                     print(f"Completed {analysis_type} analysis for {file}")
                 except Exception as e:
