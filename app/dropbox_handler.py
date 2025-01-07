@@ -2,10 +2,9 @@ import dropbox
 from dropbox import Dropbox as DropboxClient
 import os
 from dotenv import load_dotenv
+from hidden_constants import DROPBOX_ACCESS_TOKEN
 
-load_dotenv()
-
-# ACCESS_TOKEN = os.getenv('DROPBOX_ACCESS_TOKEN')
+ACCESS_TOKEN = DROPBOX_ACCESS_TOKEN
 DOWNLOAD_FOLDER = 'downloaded_pdfs'
 
 # Ensure the download folder exists

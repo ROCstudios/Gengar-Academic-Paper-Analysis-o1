@@ -63,5 +63,6 @@ def analyze_pdfs(folder_path):
             print(f"Analysis complete for {file}")
 
 if __name__ == "__main__":
-    download_folder = download_pdfs_from_dropbox()
-    analyze_pdfs(download_folder)
+    # download_folder = download_pdfs_from_dropbox()
+    # analyze_pdfs(download_folder)
+    analyze_pdfs("downloaded_pdfs")

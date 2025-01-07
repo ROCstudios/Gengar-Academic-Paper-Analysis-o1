@@ -1,7 +1,10 @@
-import openai
 import os
 import dotenv
+from openai import OpenAI
+
 dotenv.load_dotenv()
+
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 LOGICAL_ERROR_PROMPT = """
 Your task is to act as an AI named "o1" (or "o1-pro"), specializing in detecting only logical or conceptual errors (i.e., flaws in arguments or interpretations) within scientific papers. Your goal is to evaluate how effectively you can identify and describe these issues while providing a JSON-formatted report.
@@ -118,6 +121,17 @@ json
 }
 }
 Please follow this example format for your final output.
+
+Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
+
+"summary": {
+    "title": "A Balance for Fairness: Fair Distribution Utilising Physics in Games of Characteristic Function Form",
+    "authors": "Song-Ju Kimyz, Taiki Takahashix, and Kazuo Sanoy",
+    "published": "February 8, 2021",
+    "errorCount": 5
+  }
+
+NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
 
 HERE IS THE RESEARCH PAPER TO ANALYZE:
 """
@@ -239,6 +253,17 @@ json
 }
 Please follow this example format for your final output.
 
+Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
+
+"summary": {
+    "title": "A Balance for Fairness: Fair Distribution Utilising Physics in Games of Characteristic Function Form",
+    "authors": "Song-Ju Kimyz, Taiki Takahashix, and Kazuo Sanoy",
+    "published": "February 8, 2021",
+    "errorCount": 5
+  }
+
+NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
+
 HERE IS THE RESEARCH PAPER TO ANALYZE:
 """
 CALCULATIONL_ERROR_PROMPT = """
@@ -356,6 +381,17 @@ json
 }
 }
 Please follow this example format for your final output.
+
+Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
+
+"summary": {
+    "title": "A Balance for Fairness: Fair Distribution Utilising Physics in Games of Characteristic Function Form",
+    "authors": "Song-Ju Kimyz, Taiki Takahashix, and Kazuo Sanoy",
+    "published": "February 8, 2021",
+    "errorCount": 5
+  }
+
+NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
 
 HERE IS THE RESEARCH PAPER TO ANALYZE:
 """
@@ -488,6 +524,17 @@ json
 
 Please follow this example format for your final output.
 
+Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
+
+"summary": {
+    "title": "A Balance for Fairness: Fair Distribution Utilising Physics in Games of Characteristic Function Form",
+    "authors": "Song-Ju Kimyz, Taiki Takahashix, and Kazuo Sanoy",
+    "published": "February 8, 2021",
+    "errorCount": 5
+  }
+
+NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
+
 ---
 
 **HERE IS THE RESEARCH PAPER TO ANALYZE:**
@@ -611,6 +658,17 @@ json
 }
 
 Please follow this example format for your final output.
+
+Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
+
+"summary": {
+    "title": "A Balance for Fairness: Fair Distribution Utilising Physics in Games of Characteristic Function Form",
+    "authors": "Song-Ju Kimyz, Taiki Takahashix, and Kazuo Sanoy",
+    "published": "February 8, 2021",
+    "errorCount": 5
+  }
+
+NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
 
 ---
 
@@ -742,6 +800,17 @@ json
 
 Please follow this example format for your final output.
 
+Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
+
+"summary": {
+    "title": "A Balance for Fairness: Fair Distribution Utilising Physics in Games of Characteristic Function Form",
+    "authors": "Song-Ju Kimyz, Taiki Takahashix, and Kazuo Sanoy",
+    "published": "February 8, 2021",
+    "errorCount": 5
+  }
+
+NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
+
 ---
 
 **HERE IS THE RESEARCH PAPER TO ANALYZE:**
@@ -866,6 +935,17 @@ json
 
 Please follow this example format for your final output.
 
+Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
+
+"summary": {
+    "title": "A Balance for Fairness: Fair Distribution Utilising Physics in Games of Characteristic Function Form",
+    "authors": "Song-Ju Kimyz, Taiki Takahashix, and Kazuo Sanoy",
+    "published": "February 8, 2021",
+    "errorCount": 5
+  }
+
+NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
+
 ---
 
 **HERE IS THE RESEARCH PAPER TO ANALYZE:**
@@ -989,14 +1069,24 @@ json
 
 Please follow this example format for your final output.
 
+Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
+
+"summary": {
+    "title": "A Balance for Fairness: Fair Distribution Utilising Physics in Games of Characteristic Function Form",
+    "authors": "Song-Ju Kimyz, Taiki Takahashix, and Kazuo Sanoy",
+    "published": "February 8, 2021",
+    "errorCount": 5
+  }
+
+NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
+
 ---
 
 **HERE IS THE RESEARCH PAPER TO ANALYZE:**
 """
 
 def chat_with_gpt(
-    api_key = os.getenv("OPENAI_API_KEY"), 
-    model="o1", 
+    model="o1-mini", 
     prompt=None, 
     pdf_content=None, 
     messages=None
@@ -1014,18 +1104,16 @@ def chat_with_gpt(
     """
     if messages is None and prompt is not None and pdf_content is not None:
         messages = [
-            {"role": "developer", "content": prompt},
-            {"role": "user", "content": pdf_content},
+            {"role": "user", "content": prompt + "\n\n" + pdf_content},
         ]
 
-    openai.api_key = api_key
 
     try:
-        response = openai.ChatCompletion.create(
+        completion = client.chat.completions.create(
             model=model,
             messages=messages
         )
-        return response["choices"][0]["message"]["content"]
+        return completion.choices[0].message.content
     except Exception as e:
         return f"An error occurred: {e}"
 
