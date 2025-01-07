@@ -6,7 +6,8 @@ import os
 def fetch_arxiv_articles(search_query="cat:cs.AI", start=0, max_results=10):
     base_url = "http://export.arxiv.org/api/query"
     # query = f"{base_url}?search_query={search_query}&start={start}&max_results={max_results}"
-    query = "http://export.arxiv.org/api/query?search_query=(cat:q-bio+OR+cat:physics.gen-ph+OR+cat:cs.AI+OR+cat:cs.LG+OR+cat:physics.ao-ph+OR+cat:econ.GN)+ANDNOT+(abs:niche+OR+abs:specialized+OR+abs:topological)&start=0&max_results=1000"
+    #medical priority query
+    query = "http://export.arxiv.org/api/query?search_query=(cat:q-bio.QM+OR+cat:q-bio.BM+OR+cat:q-bio.CB+OR+cat:q-bio.GN+OR+cat:q-bio.MN+OR+cat:q-bio.NC+OR+cat:q-bio.OT+OR+cat:q-bio.PE+OR+cat:q-bio.QM+OR+cat:q-bio.SC+OR+cat:q-bio.TO)+ANDNOT+(abs:niche+OR+abs:specialized+OR+abs:topological)&start=0&max_results=100"
     feed = feedparser.parse(query)
     return feed.entries
 
