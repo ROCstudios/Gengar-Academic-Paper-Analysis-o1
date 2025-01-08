@@ -1,19 +1,69 @@
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional
-from datetime import datetime
-import json
-from pymongo import MongoClient
-from bson.objectid import ObjectId
 import os
+from pdf import extract_text_from_pdf
+from dropbox_handler import download_pdfs_from_dropbox
+from completions import chat_with_gpt
+from completions import LOGICAL_ERROR_PROMPT, METHODICAL_ERROR_PROMPT, CALCULATIONL_ERROR_PROMPT, DATA_ERROR_PROMPT, CITATION_ERROR_PROMPT, FORMATTING_ERROR_PROMPT, PLAGARISM_ERROR_PROMPT, ETHICAL_ERROR_PROMPT
+from datetime import datetime
+from dataclasses import dataclass, field
+from typing import List, Optional
+import json
 
-# Placeholder imports (Replace with your actual module imports)
-from analysis import AnalysisResult
-from completions import chat_with_gpt, clean_json_string
-from analysis import (
-    extract_text_from_pdf, LOGICAL_ERROR_PROMPT, METHODICAL_ERROR_PROMPT,
-    CALCULATIONL_ERROR_PROMPT, DATA_ERROR_PROMPT, CITATION_ERROR_PROMPT,
-    FORMATTING_ERROR_PROMPT, PLAGARISM_ERROR_PROMPT, ETHICAL_ERROR_PROMPT
-)
+
+@dataclass
+class Error:
+    errorCategory: str
+    issue: str 
+    implications: str
+    recommendation: str
+
+    def to_dict(self) -> dict:
+        """Convert Error to dictionary format"""
+        return {
+            'errorCategory': self.errorCategory,
+            'issue': self.issue,
+            'implications': self.implications,
+            'recommendation': self.recommendation
+        }
+
+@dataclass
+class Summary:
+    title: str
+    authors: str
+    published: str
+    errorCount: int
+
+    def to_dict(self) -> dict:
+        """Convert Summary to dictionary format"""
+        return {
+            'title': self.title,
+            'authors': self.authors,
+            'published': self.published,
+            'errorCount': self.errorCount
+        }
+
+@dataclass
+class AnalysisResult:
+    errors: List[Error]
+    summary: Summary
+
+    def to_dict(self) -> dict:
+        """Convert AnalysisResult to dictionary format"""
+        return {
+            'errors': [error.to_dict() for error in self.errors],
+            'summary': self.summary.to_dict()
+        }
+
+    @classmethod
+    def from_json(cls, json_str: str):
+        data = json.loads(json_str)
+        errors = [Error(**error) for error in data['errors']]
+        summary = Summary(**data['summary'])
+        return cls(errors=errors, summary=summary)
+
+    def to_json(self):
+        return json.dumps(self.to_dict(), indent=2)
+
+
 
 @dataclass
 class AnalysisMetadata:
@@ -82,86 +132,29 @@ class ComprehensiveAnalysis:
             ethical_analysis=AnalysisResult.from_dict(data['analyses']['ethical']) if data['analyses']['ethical'] else None
         )
 
-class MongoDBStorage:
-    def __init__(
-            self, 
-            uri="mongodb+srv://adrian:bEhG0HKts4oKcKGa@gengar-1k-research.0k4v4.mongodb.net/?retryWrites=true&w=majority&appName=Gengar-1k-Research", 
-            db_name="analysis_db", 
-            collection_name="comprehensive_analyses"
-    ):
-        self.client = MongoClient(uri)
-        self.db = self.client[db_name]
-        self.collection = self.db[collection_name]
 
-    def test_connection(self):
-        try:
-            # Connect the client to the server and ping to confirm connection
-            self.client.admin.command({"ping": 1})
-            print("Pinged your deployment. You successfully connected to MongoDB!")
-        except Exception as e:
-            print(f"Failed to connect to MongoDB: {e}")
-
-    def save_comprehensive_analysis(self, analysis: ComprehensiveAnalysis) -> str:
-        """Save a comprehensive analysis to MongoDB."""
-        analysis_dict = analysis.to_dict()
-        result = self.collection.insert_one(analysis_dict)
-        return str(result.inserted_id)
-
-    def get_analysis(self, pdf_name: str) -> Optional[ComprehensiveAnalysis]:
-        """Retrieve a specific analysis by PDF name from MongoDB."""
-        result = self.collection.find_one({"pdf_name": pdf_name})
-        if result:
-            return ComprehensiveAnalysis.from_dict(result)
-        return None
-
-    def update_analysis(self, pdf_name: str, analysis_type: str, result: AnalysisResult):
-        """Update a specific analysis in MongoDB."""
-        field_name = f"analyses.{analysis_type}"
-        self.collection.update_one(
-            {"pdf_name": pdf_name},
-            {"$set": {field_name: result.to_dict()}}
-        )
-
-    def delete_analysis(self, pdf_name: str):
-        """Delete a specific analysis by PDF name."""
-        self.collection.delete_one({"pdf_name": pdf_name})
+analysis_results: List[AnalysisResult] = []
 
 def analyze_pdfs(folder_path):
-    storage = MongoDBStorage()  # Initialize MongoDB storage
-    storage.test_connection()  # Test connection to MongoDB
-
     for file in os.listdir(folder_path):
         if file.endswith('.pdf'):
             print(f"Analyzing {file}")
+            # Check if file has already been analyzed
+            if any(result.summary.title.lower() == file.lower().replace('.pdf', '') 
+                  for result in analysis_results):
+                print(f"Skipping {file} - already analyzed")
+                continue
+
+            # Extract text from PDF
             pdf_path = os.path.join(folder_path, file)
             text = extract_text_from_pdf(pdf_path)
-
-            # Perform all types of analysis
-            prompts_and_types = [
-                (LOGICAL_ERROR_PROMPT, "logical"),
-                # (METHODICAL_ERROR_PROMPT, "methodical"),
-                # (CALCULATIONL_ERROR_PROMPT, "calculation"),
-                # (DATA_ERROR_PROMPT, "data"),
-                # (CITATION_ERROR_PROMPT, "citation"),
-                # (FORMATTING_ERROR_PROMPT, "formatting"),
-                # (PLAGARISM_ERROR_PROMPT, "plagiarism"),
-                # (ETHICAL_ERROR_PROMPT, "ethical")
-            ]
-
-            comprehensive_analysis = ComprehensiveAnalysis(pdf_name=file)
-
-            for prompt, analysis_type in prompts_and_types:
-                completion = chat_with_gpt(prompt=prompt, pdf_content=text)
-                print("****")
-                print(completion)
-                print("****")
-                result = AnalysisResult.from_json(clean_json_string(completion))
-
-                setattr(comprehensive_analysis, f"{analysis_type}_analysis", result)
-
-            # Save the comprehensive analysis to MongoDB
-            mongo_id = storage.save_comprehensive_analysis(comprehensive_analysis)
-            print(f"Saved comprehensive analysis to MongoDB with ID: {mongo_id}")
+            completion = chat_with_gpt(prompt = LOGICAL_ERROR_PROMPT, pdf_content = text)
+            print(completion)
+            # Parse the completion into AnalysisResult
+            result = AnalysisResult.from_json(completion)
+            analysis_results.append(result)
+            print(f"Analysis complete for {file}")
 
 if __name__ == "__main__":
-    analyze_pdfs("downloaded_pdfs")
+    download_folder = download_pdfs_from_dropbox()
+    analyze_pdfs(download_folder)

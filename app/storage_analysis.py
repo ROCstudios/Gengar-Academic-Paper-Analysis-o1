@@ -5,10 +5,10 @@ import json
 import pickle
 import os
 from pathlib import Path
-from analysis import AnalysisResult
+from app.data_analysis import AnalysisResult
 from completions import chat_with_gpt, clean_json_string
-from analysis import extract_text_from_pdf  
-from analysis import LOGICAL_ERROR_PROMPT, METHODICAL_ERROR_PROMPT, CALCULATIONL_ERROR_PROMPT, DATA_ERROR_PROMPT, CITATION_ERROR_PROMPT, FORMATTING_ERROR_PROMPT, PLAGARISM_ERROR_PROMPT, ETHICAL_ERROR_PROMPT
+from app.data_analysis import extract_text_from_pdf  
+from app.data_analysis import LOGICAL_ERROR_PROMPT, METHODICAL_ERROR_PROMPT, CALCULATIONL_ERROR_PROMPT, DATA_ERROR_PROMPT, CITATION_ERROR_PROMPT, FORMATTING_ERROR_PROMPT, PLAGARISM_ERROR_PROMPT, ETHICAL_ERROR_PROMPT
 
 @dataclass
 class AnalysisMetadata:
