@@ -136,8 +136,6 @@ NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
 
 NEVER PRINT ``` or ```json in the final output
 
-ALWAYS ESCAPE SPECIAL CHARACTERS IN THE FINAL OUTPUT.  This is very important.
-
 HERE IS THE RESEARCH PAPER TO ANALYZE:
 """
 METHODICAL_ERROR_PROMPT = """
@@ -271,8 +269,6 @@ NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
 
 NEVER PRINT ``` or ```json in the final output
 
-ALWAYS ESCAPE SPECIAL CHARACTERS IN THE FINAL OUTPUT.  This is very important.
-
 HERE IS THE RESEARCH PAPER TO ANALYZE:
 """
 CALCULATIONL_ERROR_PROMPT = """
@@ -403,8 +399,6 @@ Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
 NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
 
 NEVER PRINT ``` or ```json in the final output
-
-ALWAYS ESCAPE SPECIAL CHARACTERS IN THE FINAL OUTPUT.  This is very important.
 
 HERE IS THE RESEARCH PAPER TO ANALYZE:
 """
@@ -550,8 +544,6 @@ NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
 
 NEVER PRINT ``` or ```json in the final output
 
-ALWAYS ESCAPE SPECIAL CHARACTERS IN THE FINAL OUTPUT.  This is very important.
-
 ---
 
 **HERE IS THE RESEARCH PAPER TO ANALYZE:**
@@ -687,8 +679,6 @@ Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
 NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
 
 NEVER PRINT ``` or ```json in the final output
-
-ALWAYS ESCAPE SPECIAL CHARACTERS IN THE FINAL OUTPUT.  This is very important.
 
 ---
 
@@ -833,8 +823,6 @@ NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
 
 NEVER PRINT ``` or ```json in the final output
 
-ALWAYS ESCAPE SPECIAL CHARACTERS IN THE FINAL OUTPUT.  This is very important.
-
 ---
 
 **HERE IS THE RESEARCH PAPER TO ANALYZE:**
@@ -972,8 +960,6 @@ NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
 
 NEVER PRINT ``` or ```json in the final output
 
-ALWAYS ESCAPE SPECIAL CHARACTERS IN THE FINAL OUTPUT.  This is very important.
-
 ---
 
 **HERE IS THE RESEARCH PAPER TO ANALYZE:**
@@ -1110,19 +1096,16 @@ NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
 
 NEVER PRINT ``` or ```json in the final output
 
-ALWAYS ESCAPE SPECIAL CHARACTERS IN THE FINAL OUTPUT.  This is very important.
-
 ---
 
 **HERE IS THE RESEARCH PAPER TO ANALYZE:**
 """
 
 def clean_json_string(json_str):
-    """Clean JSON string by removing control characters and escaping special characters"""
-    # Remove control characters
-    json_str = re.sub(r'[\x00-\x1F\x7F-\x9F]', '', json_str)
-    
-    # Extract just the JSON object (assuming it's between the first { and last })
+    """
+    Clean JSON string by handling control characters, escape sequences, and truncated content.
+    """
+    # Remove any non-JSON content before the first { and after the last }
     try:
         start = json_str.find('{')
         end = json_str.rfind('}') + 1
@@ -1130,7 +1113,23 @@ def clean_json_string(json_str):
             json_str = json_str[start:end]
     except:
         pass
-        
+
+    # Handle escape sequences
+    json_str = json_str.encode('utf-8').decode('unicode-escape')
+    
+    # Remove problematic escape sequences that aren't valid JSON
+    json_str = re.sub(r'\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})', r'', json_str)
+    
+    # Remove control characters
+    json_str = re.sub(r'[\x00-\x1F\x7F-\x9F]', '', json_str)
+    
+    # Normalize quotes
+    json_str = json_str.replace('"', '"').replace('"', '"')
+    
+    # Handle truncated content by ensuring proper JSON structure
+    if not json_str.strip().endswith('}'):
+        json_str = json_str.strip() + '}'
+    
     return json_str
 
 def chat_with_gpt(
