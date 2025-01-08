@@ -57,7 +57,7 @@ def upload_pdf():
 
         try:
             text = extract_text_from_pdf(filepath)
-            analysis = get_pdf_analysis(text)
+            analysis = get_pdf_analysis(filename, text)
             return jsonify({'analysis': analysis}), 200
         except Exception as e:
             return jsonify({'error': f'Failed to extract text: {str(e)}'}), 500

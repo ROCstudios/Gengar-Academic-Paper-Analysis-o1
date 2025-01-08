@@ -9,14 +9,17 @@ from data_analysis import (
 )
 from data_analysis import ComprehensiveAnalysis, AnalysisResult
 
-storage = MongoDBStorage()  # Initialize MongoDB storage
-storage.test_connection()  # Test connection to MongoDB
+bulk_storage = MongoDBStorage()  # Initialize MongoDB storage
+bulk_storage.test_connection()  # Test connection to MongoDB
 
-def get_pdf_analysis(text: str):
-    mongo_id = analyze_single_pdf(text)
+upload_storage = MongoDBStorage(collection_name="uploads")
+upload_storage.test_connection()
+
+def get_pdf_analysis(pdf_name: str, text: str):
+    mongo_id = analyze_single_pdf(pdf_name, text, upload_storage)
     return get_analysis_by_id(mongo_id)
 
-def analyze_single_pdf(text: str):
+def analyze_single_pdf(pdf_name: str, text: str, database: MongoDBStorage):
     
     # Perform all types of analysis
     prompts_and_types = [
@@ -42,10 +45,10 @@ def analyze_single_pdf(text: str):
         setattr(comprehensive_analysis, f"{analysis_type}_analysis", result)
 
     # Save the comprehensive analysis to MongoDB
-    mongo_id = storage.save_comprehensive_analysis(comprehensive_analysis)
+    mongo_id = database.save_comprehensive_analysis(comprehensive_analysis)
     return mongo_id
 
-def analyze_pdfs(folder_path):
+def bulk_analyze_pdfs(folder_path):
     """Analyze all PDFs in a given folder.
     
     Args:
@@ -56,7 +59,7 @@ def analyze_pdfs(folder_path):
             print(f"Checking {file}")
             
             # Check if analysis already exists in MongoDB
-            existing_analysis = storage.collection.find_one({"pdf_name": file})
+            existing_analysis = bulk_storage.collection.find_one({"pdf_name": file})
             if existing_analysis:
                 print(f"Analysis for {file} already exists in MongoDB. Skipping...")
                 continue
@@ -65,12 +68,12 @@ def analyze_pdfs(folder_path):
             pdf_path = os.path.join(folder_path, file)
             text = extract_text_from_pdf(pdf_path)
             
-            mongo_id = analyze_single_pdf(text)
+            mongo_id = analyze_single_pdf(file, text, bulk_storage)
             print(f"Saved comprehensive analysis to MongoDB with ID: {mongo_id}")
 
 def get_analysis_json(pdf_name: str) -> Optional[dict]:
     """Retrieve a specific analysis by PDF name and return it as a JSON/dict object."""
-    result = storage.collection.find_one({"pdf_name": pdf_name})
+    result = bulk_storage.collection.find_one({"pdf_name": pdf_name})
     if result:
         # Remove MongoDB's _id field since it's not JSON serializable
         result.pop('_id', None)
@@ -80,7 +83,7 @@ def get_analysis_json(pdf_name: str) -> Optional[dict]:
 def get_analysis_by_id(mongo_id: str) -> Optional[dict]:
     """Retrieve a specific analysis by MongoDB ID and return it as a JSON/dict object."""
     from bson.objectid import ObjectId
-    result = storage.collection.find_one({"_id": ObjectId(mongo_id)})
+    result = bulk_storage.collection.find_one({"_id": ObjectId(mongo_id)})
     if result:
         # Remove MongoDB's _id field since it's not JSON serializable
         result.pop('_id', None)
@@ -89,16 +92,16 @@ def get_analysis_by_id(mongo_id: str) -> Optional[dict]:
 
 def get_all_analyses():
     """Return all documents as a list."""
-    cursor = storage.collection.find({})
+    cursor = bulk_storage.collection.find({})
     return [doc for doc in cursor]
 
 def count_analyses():
     """Count total documents in collection."""
-    return storage.collection.count_documents({})
+    return bulk_storage.collection.count_documents({})
 
 def print_all_pdf_names():
     """Print just the PDF names of all documents."""
-    cursor = storage.collection.find({}, {"pdf_name": 1})  # Only retrieve pdf_name field
+    cursor = bulk_storage.collection.find({}, {"pdf_name": 1})  # Only retrieve pdf_name field
     for doc in cursor:
         print(doc["pdf_name"])
 
@@ -107,7 +110,7 @@ def get_collective_scores() -> dict:
     Queries all analyses and returns a JSON summary of error counts by type.
     Returns a dictionary with error types as keys and their total counts as values.
     """
-    cursor = storage.collection.find({})
+    cursor = bulk_storage.collection.find({})
     
     # Initialize counters for each error type
     collective_scores = {
