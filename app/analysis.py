@@ -15,6 +15,15 @@ class Error:
     implications: str
     recommendation: str
 
+    def to_dict(self) -> dict:
+        """Convert Error to dictionary format"""
+        return {
+            'errorCategory': self.errorCategory,
+            'issue': self.issue,
+            'implications': self.implications,
+            'recommendation': self.recommendation
+        }
+
 @dataclass
 class Summary:
     title: str
@@ -22,10 +31,26 @@ class Summary:
     published: str
     errorCount: int
 
+    def to_dict(self) -> dict:
+        """Convert Summary to dictionary format"""
+        return {
+            'title': self.title,
+            'authors': self.authors,
+            'published': self.published,
+            'errorCount': self.errorCount
+        }
+
 @dataclass
 class AnalysisResult:
     errors: List[Error]
     summary: Summary
+
+    def to_dict(self) -> dict:
+        """Convert AnalysisResult to dictionary format"""
+        return {
+            'errors': [error.to_dict() for error in self.errors],
+            'summary': self.summary.to_dict()
+        }
 
     @classmethod
     def from_json(cls, json_str: str):
@@ -35,10 +60,7 @@ class AnalysisResult:
         return cls(errors=errors, summary=summary)
 
     def to_json(self):
-        return json.dumps({
-            'errors': [vars(error) for error in self.errors],
-            'summary': vars(self.summary)
-        }, indent=2)
+        return json.dumps(self.to_dict(), indent=2)
 
 analysis_results: List[AnalysisResult] = []
 

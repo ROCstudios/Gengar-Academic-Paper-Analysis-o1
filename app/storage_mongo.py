@@ -55,14 +55,14 @@ class ComprehensiveAnalysis:
             'pdf_name': self.pdf_name,
             'timestamp': self.timestamp,
             'analyses': {
-                'logical': self.logical_analysis.to_json() if self.logical_analysis else None,
-                'methodical': self.methodical_analysis.to_json() if self.methodical_analysis else None,
-                'calculation': self.calculation_analysis.to_json() if self.calculation_analysis else None,
-                'data': self.data_analysis.to_json() if self.data_analysis else None,
-                'citation': self.citation_analysis.to_json() if self.citation_analysis else None,
-                'formatting': self.formatting_analysis.to_json() if self.formatting_analysis else None,
-                'plagiarism': self.plagiarism_analysis.to_json() if self.plagiarism_analysis else None,
-                'ethical': self.ethical_analysis.to_json() if self.ethical_analysis else None
+                'logical': self.logical_analysis.to_dict() if self.logical_analysis else None,
+                'methodical': self.methodical_analysis.to_dict() if self.methodical_analysis else None,
+                'calculation': self.calculation_analysis.to_dict() if self.calculation_analysis else None,
+                'data': self.data_analysis.to_dict() if self.data_analysis else None,
+                'citation': self.citation_analysis.to_dict() if self.citation_analysis else None,
+                'formatting': self.formatting_analysis.to_dict() if self.formatting_analysis else None,
+                'plagiarism': self.plagiarism_analysis.to_dict() if self.plagiarism_analysis else None,
+                'ethical': self.ethical_analysis.to_dict() if self.ethical_analysis else None
             },
             'total_errors': self.get_total_error_count()
         }
@@ -72,22 +72,22 @@ class ComprehensiveAnalysis:
         return ComprehensiveAnalysis(
             pdf_name=data['pdf_name'],
             timestamp=data['timestamp'],
-            logical_analysis=AnalysisResult.from_json(data['analyses']['logical']) if data['analyses']['logical'] else None,
-            methodical_analysis=AnalysisResult.from_json(data['analyses']['methodical']) if data['analyses']['methodical'] else None,
-            calculation_analysis=AnalysisResult.from_json(data['analyses']['calculation']) if data['analyses']['calculation'] else None,
-            data_analysis=AnalysisResult.from_json(data['analyses']['data']) if data['analyses']['data'] else None,
-            citation_analysis=AnalysisResult.from_json(data['analyses']['citation']) if data['analyses']['citation'] else None,
-            formatting_analysis=AnalysisResult.from_json(data['analyses']['formatting']) if data['analyses']['formatting'] else None,
-            plagiarism_analysis=AnalysisResult.from_json(data['analyses']['plagiarism']) if data['analyses']['plagiarism'] else None,
-            ethical_analysis=AnalysisResult.from_json(data['analyses']['ethical']) if data['analyses']['ethical'] else None
+            logical_analysis=AnalysisResult.from_dict(data['analyses']['logical']) if data['analyses']['logical'] else None,
+            methodical_analysis=AnalysisResult.from_dict(data['analyses']['methodical']) if data['analyses']['methodical'] else None,
+            calculation_analysis=AnalysisResult.from_dict(data['analyses']['calculation']) if data['analyses']['calculation'] else None,
+            data_analysis=AnalysisResult.from_dict(data['analyses']['data']) if data['analyses']['data'] else None,
+            citation_analysis=AnalysisResult.from_dict(data['analyses']['citation']) if data['analyses']['citation'] else None,
+            formatting_analysis=AnalysisResult.from_dict(data['analyses']['formatting']) if data['analyses']['formatting'] else None,
+            plagiarism_analysis=AnalysisResult.from_dict(data['analyses']['plagiarism']) if data['analyses']['plagiarism'] else None,
+            ethical_analysis=AnalysisResult.from_dict(data['analyses']['ethical']) if data['analyses']['ethical'] else None
         )
 
 class MongoDBStorage:
     def __init__(
-        self, 
-        uri="mongodb+srv://adrian:bEhG0HKts4oKcKGa@gengar-1k-research.0k4v4.mongodb.net/?retryWrites=true&w=majority&appName=Gengar-1k-Research", 
-        db_name="analysis_db", 
-        collection_name="comprehensive_analyses"
+            self, 
+            uri="mongodb+srv://adrian:bEhG0HKts4oKcKGa@gengar-1k-research.0k4v4.mongodb.net/?retryWrites=true&w=majority&appName=Gengar-1k-Research", 
+            db_name="analysis_db", 
+            collection_name="comprehensive_analyses"
     ):
         self.client = MongoClient(uri)
         self.db = self.client[db_name]
@@ -119,7 +119,7 @@ class MongoDBStorage:
         field_name = f"analyses.{analysis_type}"
         self.collection.update_one(
             {"pdf_name": pdf_name},
-            {"$set": {field_name: result.to_json()}}
+            {"$set": {field_name: result.to_dict()}}
         )
 
     def delete_analysis(self, pdf_name: str):
@@ -127,8 +127,8 @@ class MongoDBStorage:
         self.collection.delete_one({"pdf_name": pdf_name})
 
 def analyze_pdfs(folder_path):
-    storage = MongoDBStorage()  
-    storage.test_connection()
+    storage = MongoDBStorage()  # Initialize MongoDB storage
+    storage.test_connection()  # Test connection to MongoDB
 
     for file in os.listdir(folder_path):
         if file.endswith('.pdf'):
@@ -139,13 +139,13 @@ def analyze_pdfs(folder_path):
             # Perform all types of analysis
             prompts_and_types = [
                 (LOGICAL_ERROR_PROMPT, "logical"),
-                (METHODICAL_ERROR_PROMPT, "methodical"),
-                (CALCULATIONL_ERROR_PROMPT, "calculation"),
-                (DATA_ERROR_PROMPT, "data"),
-                (CITATION_ERROR_PROMPT, "citation"),
-                (FORMATTING_ERROR_PROMPT, "formatting"),
-                (PLAGARISM_ERROR_PROMPT, "plagiarism"),
-                (ETHICAL_ERROR_PROMPT, "ethical")
+                # (METHODICAL_ERROR_PROMPT, "methodical"),
+                # (CALCULATIONL_ERROR_PROMPT, "calculation"),
+                # (DATA_ERROR_PROMPT, "data"),
+                # (CITATION_ERROR_PROMPT, "citation"),
+                # (FORMATTING_ERROR_PROMPT, "formatting"),
+                # (PLAGARISM_ERROR_PROMPT, "plagiarism"),
+                # (ETHICAL_ERROR_PROMPT, "ethical")
             ]
 
             comprehensive_analysis = ComprehensiveAnalysis(pdf_name=file)
