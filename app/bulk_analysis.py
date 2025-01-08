@@ -2,12 +2,13 @@ import os
 from mongo import MongoDBStorage
 from completions import chat_with_gpt, clean_json_string
 from typing import Optional
-from data_analysis import (
-    extract_text_from_pdf, LOGICAL_ERROR_PROMPT, METHODICAL_ERROR_PROMPT,
+from prompts import (
+    LOGICAL_ERROR_PROMPT, METHODICAL_ERROR_PROMPT,
     CALCULATIONL_ERROR_PROMPT, DATA_ERROR_PROMPT, CITATION_ERROR_PROMPT,
-    FORMATTING_ERROR_PROMPT, PLAGARISM_ERROR_PROMPT, ETHICAL_ERROR_PROMPT
+    FORMATTING_ERROR_PROMPT, PLAGARISM_ERROR_PROMPT, ETHICAL_ERROR_PROMPT, BIG_BOY_SINGLE_PROMPT
 )
 from data_analysis import ComprehensiveAnalysis, AnalysisResult
+from entry import extract_text_from_pdf
 
 bulk_storage = MongoDBStorage()  # Initialize MongoDB storage
 bulk_storage.test_connection()  # Test connection to MongoDB
