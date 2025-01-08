@@ -73,6 +73,10 @@ Constraints:
 
 1. We aim to isolate the scope to logical/conceptual errors, ignoring all others.
 2. Our style is structured, with clearly defined sections and mandatory use of JSON for the final output.
+3. NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
+4. NEVER PRINT ``` or ```json in the final output
+5. NEVER PRINT ANYTHING ELSE THAN THE JSON OUTPUT
+6. NEVER PROVIDE ANY NEW KEYWORDS OR KEY VALUES OTHERS THAN THE ONES SPECIFIED IN THE EXAMPLE OUTPUTS
 
 —
 
@@ -131,10 +135,6 @@ Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
     "published": "February 8, 2021",
     "errorCount": 5
   }
-
-NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
-
-NEVER PRINT ``` or ```json in the final output
 
 HERE IS THE RESEARCH PAPER TO ANALYZE:
 """
@@ -211,6 +211,10 @@ Constraints
 
 1. We aim to isolate the scope to methodological errors, ignoring all others.
 2. Our style is structured, with clearly defined sections and mandatory use of JSON for the final output.
+3. NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
+4. NEVER PRINT ``` or ```json in the final output
+5. NEVER PRINT ANYTHING ELSE THAN THE JSON OUTPUT
+6. NEVER PROVIDE ANY NEW KEYWORDS OR KEY VALUES OTHERS THAN THE ONES SPECIFIED IN THE EXAMPLE OUTPUTS
 
 Here are your example outputs separated by the text string "json" but do not include the string "json" in the final output.
 
@@ -342,6 +346,10 @@ Constraints
 
 1. We aim to isolate the scope to calculation errors, ignoring all others.
 2. Our style is structured, with clearly defined sections and mandatory use of JSON for the final output.
+3. NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
+4. NEVER PRINT ``` or ```json in the final output
+5. NEVER PRINT ANYTHING ELSE THAN THE JSON OUTPUT
+6. NEVER PROVIDE ANY NEW KEYWORDS OR KEY VALUES OTHERS THAN THE ONES SPECIFIED IN THE EXAMPLE OUTPUTS
 
 Here are your example outputs separated by the text string "json" but do not include the string "json" in the final output.
 
@@ -430,6 +438,10 @@ For each error, include:
 1. Issue: A concise description of the data discrepancy.
 2. Implications: The potential impact or significance of this inconsistency.
 3. Recommendation: How to resolve or mitigate the issue (e.g., reconciling reported figures, providing clarification on dataset versions, or verifying data with cross-checks).
+4. NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
+5. NEVER PRINT ``` or ```json in the final output
+6. NEVER PRINT ANYTHING ELSE THAN THE JSON OUTPUT
+7. NEVER PROVIDE ANY NEW KEYWORDS OR KEY VALUES OTHERS THAN THE ONES SPECIFIED IN THE EXAMPLE OUTPUTS
 
 ---
 
@@ -618,6 +630,10 @@ Constraints
 
 1. We aim to **isolate the scope to citation and reference errors**, ignoring all others.
 2. Our style is structured, with clearly defined sections and **mandatory use of JSON** for the final output.
+3. NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
+4. NEVER PRINT ``` or ```json in the final output
+5. NEVER PRINT ANYTHING ELSE THAN THE JSON OUTPUT
+6. NEVER PROVIDE ANY NEW KEYWORDS OR KEY VALUES OTHERS THAN THE ONES SPECIFIED IN THE EXAMPLE OUTPUTS
 
 ---
 
@@ -761,6 +777,10 @@ Constraints
 
 1. We aim to **isolate the scope to formatting errors**, ignoring all others.
 2. Our style is structured, with clearly defined sections and **mandatory use of JSON** for the final output.
+3. NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
+4. NEVER PRINT ``` or ```json in the final output
+5. NEVER PRINT ANYTHING ELSE THAN THE JSON OUTPUT
+6. NEVER PROVIDE ANY NEW KEYWORDS OR KEY VALUES OTHERS THAN THE ONES SPECIFIED IN THE EXAMPLE OUTPUTS
 
 ---
 
@@ -898,6 +918,10 @@ Constraints
 
 1. We aim to **isolate the scope to plagiarism or originality issues**, ignoring all others.
 2. Our style is structured, with clearly defined sections and **mandatory use of JSON** for the final output.
+3. NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
+4. NEVER PRINT ``` or ```json in the final output
+5. NEVER PRINT ANYTHING ELSE THAN THE JSON OUTPUT
+6. NEVER PROVIDE ANY NEW KEYWORDS OR KEY VALUES OTHERS THAN THE ONES SPECIFIED IN THE EXAMPLE OUTPUTS
 
 ---
 
@@ -1034,6 +1058,10 @@ Constraints
 
 1. We aim to **isolate the scope to ethical issues**, ignoring all others.
 2. Our style is structured, with clearly defined sections and **mandatory use of JSON** for the final output.
+3. NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
+4. NEVER PRINT ``` or ```json in the final output
+5. NEVER PRINT ANYTHING ELSE THAN THE JSON OUTPUT
+6. NEVER PROVIDE ANY NEW KEYWORDS OR KEY VALUES OTHERS THAN THE ONES SPECIFIED IN THE EXAMPLE OUTPUTS
 
 ---
 
@@ -1092,9 +1120,6 @@ Note: The summary section MUST ALWAYS FOLLOW THE SAME FORMAT AS THIS
     "errorCount": 5
   }
 
-NEVER CHANGE THE FORMAT OF THE SUMMARY SECTION
-
-NEVER PRINT ``` or ```json in the final output
 
 ---
 

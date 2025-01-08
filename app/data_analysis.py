@@ -56,11 +56,23 @@ class AnalysisResult:
     @classmethod
     def from_json(cls, json_str: str):
         data = json.loads(json_str)
-        errors = [Error(**error) for error in data['errors']]
+        
+        # Filter out unexpected keywords for Error objects
+        errors = []
+        for error_data in data['errors']:
+            error_fields = {k: v for k, v in error_data.items() 
+                          if k in Error.__annotations__}
+            errors.append(Error(**error_fields))
+
+        # Filter out unexpected keywords for Summary object
+        summary_fields = {k: v for k, v in data['summary'].items()
+                         if k in Summary.__annotations__}
+        
         # Remove any newlines from pdf_name if it exists in summary
-        if 'pdf_name' in data['summary']:
-            data['summary']['pdf_name'] = data['summary']['pdf_name'].replace('\n', '')
-        summary = Summary(**data['summary'])
+        if 'pdf_name' in summary_fields:
+            summary_fields['pdf_name'] = summary_fields['pdf_name'].replace('\n', '')
+            
+        summary = Summary(**summary_fields)
         return cls(errors=errors, summary=summary)
 
     def to_json(self):

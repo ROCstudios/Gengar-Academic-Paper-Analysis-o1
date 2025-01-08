@@ -16,6 +16,14 @@ def analyze_pdfs(folder_path):
 
     for file in os.listdir(folder_path):
         if file.endswith('.pdf'):
+            print(f"Checking {file}")
+            
+            # Check if analysis already exists in MongoDB
+            existing_analysis = storage.collection.find_one({"pdf_name": file})
+            if existing_analysis:
+                print(f"Analysis for {file} already exists in MongoDB. Skipping...")
+                continue
+
             print(f"Analyzing {file}")
             pdf_path = os.path.join(folder_path, file)
             text = extract_text_from_pdf(pdf_path)
@@ -71,9 +79,50 @@ def print_all_pdf_names():
     for doc in cursor:
         print(doc["pdf_name"])
 
+def get_collective_scores() -> dict:
+    """
+    Queries all analyses and returns a JSON summary of error counts by type.
+    Returns a dictionary with error types as keys and their total counts as values.
+    """
+    cursor = storage.collection.find({})
+    
+    # Initialize counters for each error type
+    collective_scores = {
+        "logical_errors": 0,
+        "methodical_errors": 0,
+        "calculation_errors": 0,
+        "data_errors": 0,
+        "citation_errors": 0,
+        "formatting_errors": 0,
+        "plagiarism_errors": 0,
+        "ethical_errors": 0
+    }
+    
+    # Map analysis types to their corresponding JSON fields
+    analysis_types = {
+        "logical": "logical_analysis",
+        "methodical": "methodical_analysis",
+        "calculation": "calculation_analysis",
+        "data": "data_analysis",
+        "citation": "citation_analysis",
+        "formatting": "formatting_analysis",
+        "plagiarism": "plagiarism_analysis",
+        "ethical": "ethical_analysis"
+    }
+    
+    # Count errors from each document
+    for doc in cursor:
+        for error_type, field_name in analysis_types.items():
+            if field_name in doc and doc[field_name]:
+                analysis = doc[field_name]
+                if 'errors' in analysis and isinstance(analysis['errors'], list):
+                    collective_scores[f"{error_type}_errors"] += len(analysis['errors'])
+    
+    return collective_scores
+
 if __name__ == "__main__":
     #add bulk download pdfs
 
-    # analyze_pdfs("downloaded_pdfs")
-    print(get_analysis_json("A_Balance_for_Fairness:_Fair_Distribution_Utilising_Physics_in_Games_of_Characteristic_Function_Form.pdf"))
+    analyze_pdfs("downloaded_pdfs")
+    # print(get_analysis_json("A_Balance_for_Fairness:_Fair_Distribution_Utilising_Physics_in_Games_of_Characteristic_Function_Form.pdf"))
 
