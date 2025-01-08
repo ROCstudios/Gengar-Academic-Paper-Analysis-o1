@@ -1151,6 +1151,9 @@ def clean_json_string(json_str):
     # Normalize quotes
     json_str = json_str.replace('"', '"').replace('"', '"')
     
+    # Remove newlines
+    json_str = json_str.replace("\n", "")
+    
     # Handle truncated content by ensuring proper JSON structure
     if not json_str.strip().endswith('}'):
         json_str = json_str.strip() + '}'

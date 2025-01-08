@@ -100,21 +100,21 @@ def get_collective_scores() -> dict:
     
     # Map analysis types to their corresponding JSON fields
     analysis_types = {
-        "logical": "logical_analysis",
-        "methodical": "methodical_analysis",
-        "calculation": "calculation_analysis",
-        "data": "data_analysis",
-        "citation": "citation_analysis",
-        "formatting": "formatting_analysis",
-        "plagiarism": "plagiarism_analysis",
-        "ethical": "ethical_analysis"
+        "logical": "logical",
+        "methodical": "methodical",
+        "calculation": "calculation",
+        "data": "data",
+        "citation": "citation",
+        "formatting": "formatting",
+        "plagiarism": "plagiarism",
+        "ethical": "ethical"
     }
     
     # Count errors from each document
     for doc in cursor:
         for error_type, field_name in analysis_types.items():
-            if field_name in doc and doc[field_name]:
-                analysis = doc[field_name]
+            if 'analyses' in doc and field_name in doc['analyses'] and doc['analyses'][field_name]:
+                analysis = doc['analyses'][field_name]
                 if 'errors' in analysis and isinstance(analysis['errors'], list):
                     collective_scores[f"{error_type}_errors"] += len(analysis['errors'])
     
@@ -122,7 +122,7 @@ def get_collective_scores() -> dict:
 
 if __name__ == "__main__":
     #add bulk download pdfs
-
-    analyze_pdfs("downloaded_pdfs")
+    # analyze_pdfs("downloaded_pdfs")
     # print(get_analysis_json("A_Balance_for_Fairness:_Fair_Distribution_Utilising_Physics_in_Games_of_Characteristic_Function_Form.pdf"))
+    print(get_collective_scores())
 
