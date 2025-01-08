@@ -57,6 +57,9 @@ class AnalysisResult:
     def from_json(cls, json_str: str):
         data = json.loads(json_str)
         errors = [Error(**error) for error in data['errors']]
+        # Remove any newlines from pdf_name if it exists in summary
+        if 'pdf_name' in data['summary']:
+            data['summary']['pdf_name'] = data['summary']['pdf_name'].replace('\n', '')
         summary = Summary(**data['summary'])
         return cls(errors=errors, summary=summary)
 
