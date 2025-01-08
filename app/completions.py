@@ -1188,7 +1188,7 @@ def chat_with_gpt(
             model=model,
             messages=messages
         )
-        return completion.choices[0].message.content
+        return clean_json_string(completion.choices[0].message.content)
     except Exception as e:
         return f"An error occurred: {e}"
 

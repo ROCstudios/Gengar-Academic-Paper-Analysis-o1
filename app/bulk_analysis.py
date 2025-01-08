@@ -12,8 +12,45 @@ from data_analysis import ComprehensiveAnalysis, AnalysisResult
 storage = MongoDBStorage()  # Initialize MongoDB storage
 storage.test_connection()  # Test connection to MongoDB
 
-def analyze_pdfs(folder_path):
+def get_pdf_analysis(text: str):
+    mongo_id = analyze_single_pdf(text)
+    return get_analysis_by_id(mongo_id)
 
+def analyze_single_pdf(text: str):
+    
+    # Perform all types of analysis
+    prompts_and_types = [
+        (LOGICAL_ERROR_PROMPT, "logical"),
+        (METHODICAL_ERROR_PROMPT, "methodical"),
+        (CALCULATIONL_ERROR_PROMPT, "calculation"),
+        (DATA_ERROR_PROMPT, "data"),
+        (CITATION_ERROR_PROMPT, "citation"),
+        (FORMATTING_ERROR_PROMPT, "formatting"),
+        (PLAGARISM_ERROR_PROMPT, "plagiarism"),
+        (ETHICAL_ERROR_PROMPT, "ethical")
+    ]
+
+    comprehensive_analysis = ComprehensiveAnalysis(pdf_name=pdf_name)
+
+    for prompt, analysis_type in prompts_and_types:
+        completion = chat_with_gpt(prompt=prompt, pdf_content=text)
+        print("****")
+        print(completion)
+        print("****\n")
+        result = AnalysisResult.from_json(completion)
+
+        setattr(comprehensive_analysis, f"{analysis_type}_analysis", result)
+
+    # Save the comprehensive analysis to MongoDB
+    mongo_id = storage.save_comprehensive_analysis(comprehensive_analysis)
+    return mongo_id
+
+def analyze_pdfs(folder_path):
+    """Analyze all PDFs in a given folder.
+    
+    Args:
+        folder_path (str): Path to folder containing PDF files to analyze
+    """
     for file in os.listdir(folder_path):
         if file.endswith('.pdf'):
             print(f"Checking {file}")
@@ -27,37 +64,23 @@ def analyze_pdfs(folder_path):
             print(f"Analyzing {file}")
             pdf_path = os.path.join(folder_path, file)
             text = extract_text_from_pdf(pdf_path)
-
-            # Perform all types of analysis
-            prompts_and_types = [
-                (LOGICAL_ERROR_PROMPT, "logical"),
-                (METHODICAL_ERROR_PROMPT, "methodical"),
-                (CALCULATIONL_ERROR_PROMPT, "calculation"),
-                (DATA_ERROR_PROMPT, "data"),
-                (CITATION_ERROR_PROMPT, "citation"),
-                (FORMATTING_ERROR_PROMPT, "formatting"),
-                (PLAGARISM_ERROR_PROMPT, "plagiarism"),
-                (ETHICAL_ERROR_PROMPT, "ethical")
-            ]
-
-            comprehensive_analysis = ComprehensiveAnalysis(pdf_name=file)
-
-            for prompt, analysis_type in prompts_and_types:
-                completion = chat_with_gpt(prompt=prompt, pdf_content=text)
-                print("****")
-                print(completion)
-                print("****\n")
-                result = AnalysisResult.from_json(clean_json_string(completion))
-
-                setattr(comprehensive_analysis, f"{analysis_type}_analysis", result)
-
-            # Save the comprehensive analysis to MongoDB
-            mongo_id = storage.save_comprehensive_analysis(comprehensive_analysis)
+            
+            mongo_id = analyze_single_pdf(text)
             print(f"Saved comprehensive analysis to MongoDB with ID: {mongo_id}")
 
 def get_analysis_json(pdf_name: str) -> Optional[dict]:
     """Retrieve a specific analysis by PDF name and return it as a JSON/dict object."""
     result = storage.collection.find_one({"pdf_name": pdf_name})
+    if result:
+        # Remove MongoDB's _id field since it's not JSON serializable
+        result.pop('_id', None)
+        return result
+    return None
+
+def get_analysis_by_id(mongo_id: str) -> Optional[dict]:
+    """Retrieve a specific analysis by MongoDB ID and return it as a JSON/dict object."""
+    from bson.objectid import ObjectId
+    result = storage.collection.find_one({"_id": ObjectId(mongo_id)})
     if result:
         # Remove MongoDB's _id field since it's not JSON serializable
         result.pop('_id', None)
