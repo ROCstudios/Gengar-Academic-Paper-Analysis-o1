@@ -7,3 +7,4 @@ python-dotenv
 openai
 pymongo
 flask-cors
+gunicorn
