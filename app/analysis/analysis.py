@@ -1,14 +1,14 @@
 import os
-from api.mongo import MongoDBStorage
-from api.completions import chat_with_gpt, clean_json_string
+from ..api.mongo import MongoDBStorage
+from ..api.completions import chat_with_gpt, clean_json_string
 from typing import Optional
-from consts.prompts import (
+from ..consts.prompts import (
     LOGICAL_ERROR_PROMPT, METHODICAL_ERROR_PROMPT,
     CALCULATIONL_ERROR_PROMPT, DATA_ERROR_PROMPT, CITATION_ERROR_PROMPT,
     FORMATTING_ERROR_PROMPT, PLAGARISM_ERROR_PROMPT, ETHICAL_ERROR_PROMPT, BIG_BOY_SINGLE_PROMPT
 )
-from data.comprehensive_analysis_errors import ComprehensiveAnalysis, AnalysisResult
-from data.detailed_analysis_errors import DetailedAnalysis
+from ..data.comprehensive_analysis_errors import ComprehensiveAnalysis, AnalysisResult
+from ..data.detailed_analysis_errors import DetailedAnalysis
 from PyPDF2 import PdfReader
 
 bulk_storage = MongoDBStorage()  

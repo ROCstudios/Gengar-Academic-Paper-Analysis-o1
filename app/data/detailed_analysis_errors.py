@@ -1,9 +1,22 @@
-from dataclasses import dataclass, field
-from typing import List, Optional, Dict
-from datetime import datetime
-import json
-from app.data.comprehensive_analysis_errors import Error, AnalysisResult
+from dataclasses import dataclass
+from typing import List, Optional
 
+@dataclass
+class Error:
+    errorCategory: str
+    issue: str 
+    implications: str
+    recommendation: str
+
+    def to_dict(self) -> dict:
+        """Convert Error to dictionary format"""
+        return {
+            'errorCategory': self.errorCategory,
+            'issue': self.issue,
+            'implications': self.implications,
+            'recommendation': self.recommendation
+        }
+    
 @dataclass
 class DetailedSummary:
     title: str

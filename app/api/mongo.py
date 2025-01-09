@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from typing import Optional
-from data.comprehensive_analysis_errors import AnalysisResult, ComprehensiveAnalysis
-from data.detailed_analysis_errors import DetailedAnalysis
+from ..data.comprehensive_analysis_errors import AnalysisResult, ComprehensiveAnalysis
+from ..data.detailed_analysis_errors import DetailedAnalysis
 
 class MongoDBStorage:
     def __init__(
