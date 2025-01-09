@@ -2,7 +2,7 @@ from flask import Flask, Blueprint, request, jsonify
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import os
-from analysis.analysis import get_collective_scores, get_pdf_analysis
+from app.analysis.gpt_analysis import get_collective_scores, get_pdf_analysis, get_analysis_by_id
 
 # Define blueprint
 pdf_blueprint = Blueprint('pdf', __name__)
@@ -21,6 +21,10 @@ def allowed_file(filename):
 @analysis_blueprint.route('/all_scores', methods=['GET'])
 def get_bulk_analysis():
     return jsonify(get_collective_scores())
+
+@pdf_blueprint.route('/get_analysis/<id>', methods=['GET'])
+def fetch_analysis_by_id(id):
+    return jsonify(get_analysis_by_id(id))
 
 @pdf_blueprint.route('/upload', methods=['POST'])
 def upload_pdf():

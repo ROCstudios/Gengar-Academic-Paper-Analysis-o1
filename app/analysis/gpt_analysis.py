@@ -111,7 +111,7 @@ def bulk_analyze_pdfs(folder_path, is_multi_prompt: bool = False):
 
 def get_analysis_json(pdf_name: str) -> Optional[dict]:
     """Retrieve a specific analysis by PDF name and return it as a JSON/dict object."""
-    result = comprehensive_bulk_storage.collection.find_one({"pdf_name": pdf_name})
+    result = upload_storage.collection.find_one({"pdf_name": pdf_name})
     if result:
         # Remove MongoDB's _id field since it's not JSON serializable
         result.pop('_id', None)
@@ -121,7 +121,7 @@ def get_analysis_json(pdf_name: str) -> Optional[dict]:
 def get_analysis_by_id(mongo_id: str) -> Optional[dict]:
     """Retrieve a specific analysis by MongoDB ID and return it as a JSON/dict object."""
     from bson.objectid import ObjectId
-    result = comprehensive_bulk_storage.collection.find_one({"_id": ObjectId(mongo_id)})
+    result = upload_storage.collection.find_one({"_id": ObjectId(mongo_id)})
     if result:
         # Remove MongoDB's _id field since it's not JSON serializable
         result.pop('_id', None)
@@ -186,7 +186,7 @@ def get_collective_scores() -> dict:
 
 if __name__ == "__main__":
     #add bulk download pdfs
-    bulk_analyze_pdfs("downloaded_pdfs")
-    # print(get_analysis_json("A_Balance_for_Fairness:_Fair_Distribution_Utilising_Physics_in_Games_of_Characteristic_Function_Form.pdf"))
+    # bulk_analyze_pdfs("downloaded_pdfs")
+    print(get_analysis_json("A_Balance_for_Fairness:_Fair_Distribution_Utilising_Physics_in_Games_of_Characteristic_Function_Form.pdf"))
     # print(get_collective_scores())
 
