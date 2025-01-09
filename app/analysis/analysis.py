@@ -7,8 +7,9 @@ from consts.prompts import (
     CALCULATIONL_ERROR_PROMPT, DATA_ERROR_PROMPT, CITATION_ERROR_PROMPT,
     FORMATTING_ERROR_PROMPT, PLAGARISM_ERROR_PROMPT, ETHICAL_ERROR_PROMPT, BIG_BOY_SINGLE_PROMPT
 )
-from app.data.multi_prompt_analysis_errors import ComprehensiveAnalysis, AnalysisResult
-from entry import extract_text_from_pdf
+from data.comprehensive_analysis_errors import ComprehensiveAnalysis, AnalysisResult
+from data.detailed_analysis_errors import DetailedAnalysis
+from PyPDF2 import PdfReader
 
 bulk_storage = MongoDBStorage()  
 bulk_storage.test_connection() 
@@ -16,40 +17,71 @@ bulk_storage.test_connection()
 upload_storage = MongoDBStorage(collection_name="uploads")
 upload_storage.test_connection()
 
-def get_pdf_analysis(pdf_name: str, text: str):
-    mongo_id = analyze_single_pdf(pdf_name, text, upload_storage)
+def extract_text_from_pdf(filepath):
+    """Extract text from a PDF file.
+    
+    Args:
+        filepath (str): Path to the PDF file
+        
+    Returns:
+        str: Extracted text from the PDF
+        
+    Raises:
+        Exception: If text extraction fails
+    """
+    reader = PdfReader(filepath)
+    text = ''
+    for page in reader.pages:
+        text += page.extract_text() + '\n'
+    return text
+
+def get_pdf_analysis(filepath: str, is_multi_prompt: bool = False):
+    text = extract_text_from_pdf(filepath)
+    mongo_id = analyze_single_pdf(filepath, text, upload_storage, is_multi_prompt)
     return get_analysis_by_id(mongo_id)
 
-def analyze_single_pdf(pdf_name: str, text: str, database: MongoDBStorage):
+def analyze_single_pdf(pdf_name: str, text: str, database: MongoDBStorage, is_multi_prompt: bool = False):
     
-    # Perform all types of analysis
-    prompts_and_types = [
-        (LOGICAL_ERROR_PROMPT, "logical"),
-        (METHODICAL_ERROR_PROMPT, "methodical"),
-        (CALCULATIONL_ERROR_PROMPT, "calculation"),
-        (DATA_ERROR_PROMPT, "data"),
-        (CITATION_ERROR_PROMPT, "citation"),
-        (FORMATTING_ERROR_PROMPT, "formatting"),
-        (PLAGARISM_ERROR_PROMPT, "plagiarism"),
-        (ETHICAL_ERROR_PROMPT, "ethical")
-    ]
+    if is_multi_prompt:
+        # Perform all types of analysis
+        prompts_and_types = [
+            (LOGICAL_ERROR_PROMPT, "logical"),
+            (METHODICAL_ERROR_PROMPT, "methodical"),
+            (CALCULATIONL_ERROR_PROMPT, "calculation"),
+            (DATA_ERROR_PROMPT, "data"),
+            (CITATION_ERROR_PROMPT, "citation"),
+            (FORMATTING_ERROR_PROMPT, "formatting"),
+            (PLAGARISM_ERROR_PROMPT, "plagiarism"),
+            (ETHICAL_ERROR_PROMPT, "ethical")
+        ]
 
-    comprehensive_analysis = ComprehensiveAnalysis(pdf_name=pdf_name)
+        comprehensive_analysis = ComprehensiveAnalysis(pdf_name=pdf_name)
 
-    for prompt, analysis_type in prompts_and_types:
-        completion = chat_with_gpt(prompt=prompt, pdf_content=text)
+        for prompt, analysis_type in prompts_and_types:
+            completion = chat_with_gpt(prompt=prompt, pdf_content=text)
+            print("****")
+            print(completion)
+            print("****\n")
+            result = AnalysisResult.from_json(completion)
+
+            setattr(comprehensive_analysis, f"{analysis_type}_analysis", result)
+
+        # Save the comprehensive analysis to MongoDB
+        mongo_id = database.save_comprehensive_analysis(comprehensive_analysis)
+        return mongo_id
+    
+    else:
+        detailed_analysis = DetailedAnalysis(pdf_name=pdf_name)
+        completion = chat_with_gpt(prompt=BIG_BOY_SINGLE_PROMPT, pdf_content=text)
         print("****")
         print(completion)
         print("****\n")
-        result = AnalysisResult.from_json(completion)
+        result = DetailedAnalysis.from_json(completion)
+        setattr(detailed_analysis, "detailed_analysis", result)
+        mongo_id = database.save_detailed_analysis(detailed_analysis)
+        return mongo_id
 
-        setattr(comprehensive_analysis, f"{analysis_type}_analysis", result)
-
-    # Save the comprehensive analysis to MongoDB
-    mongo_id = database.save_comprehensive_analysis(comprehensive_analysis)
-    return mongo_id
-
-def bulk_analyze_pdfs(folder_path):
+def bulk_analyze_pdfs(folder_path, is_multi_prompt: bool = False):
     """Analyze all PDFs in a given folder.
     
     Args:
@@ -69,7 +101,7 @@ def bulk_analyze_pdfs(folder_path):
             pdf_path = os.path.join(folder_path, file)
             text = extract_text_from_pdf(pdf_path)
             
-            mongo_id = analyze_single_pdf(file, text, bulk_storage)
+            mongo_id = analyze_single_pdf(file, text, bulk_storage, is_multi_prompt)
             print(f"Saved comprehensive analysis to MongoDB with ID: {mongo_id}")
 
 def get_analysis_json(pdf_name: str) -> Optional[dict]:

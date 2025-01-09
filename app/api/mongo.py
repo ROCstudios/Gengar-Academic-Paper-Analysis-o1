@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 from typing import Optional
-from app.data.multi_prompt_analysis_errors import AnalysisResult, ComprehensiveAnalysis
+from data.comprehensive_analysis_errors import AnalysisResult, ComprehensiveAnalysis
+from data.detailed_analysis_errors import DetailedAnalysis
 
 class MongoDBStorage:
     def __init__(
@@ -27,11 +28,24 @@ class MongoDBStorage:
         result = self.collection.insert_one(analysis_dict)
         return str(result.inserted_id)
 
-    def get_analysis(self, pdf_name: str) -> Optional[ComprehensiveAnalysis]:
+    def get_comprehensive_analysis(self, pdf_name: str) -> Optional[ComprehensiveAnalysis]:
         """Retrieve a specific analysis by PDF name from MongoDB."""
         result = self.collection.find_one({"pdf_name": pdf_name})
         if result:
             return ComprehensiveAnalysis.from_dict(result)
+        return None
+    
+    def save_detailed_analysis(self, analysis: DetailedAnalysis) -> str:
+        """Save a detailed analysis to MongoDB."""
+        analysis_dict = analysis.to_dict()
+        result = self.collection.insert_one(analysis_dict)
+        return str(result.inserted_id)
+    
+    def get_detailed_analysis(self, pdf_name: str) -> Optional[DetailedAnalysis]:
+        """Retrieve a specific analysis by PDF name from MongoDB."""
+        result = self.collection.find_one({"pdf_name": pdf_name})
+        if result:
+            return DetailedAnalysis.from_dict(result)
         return None
 
     def update_analysis(self, pdf_name: str, analysis_type: str, result: AnalysisResult):

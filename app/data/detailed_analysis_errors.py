@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Dict
 from datetime import datetime
 import json
-from multi_prompt_analysis_errors import Error, AnalysisResult
+from app.data.comprehensive_analysis_errors import Error, AnalysisResult
 
 @dataclass
 class DetailedSummary:
@@ -49,7 +49,7 @@ class CategoryAnalysis:
         return cls(errors=errors)
 
 @dataclass
-class DetailedAnalysisResult:
+class DetailedAnalysis:
     summary: DetailedSummary
     logical: Optional[CategoryAnalysis] = None
     methodical: Optional[CategoryAnalysis] = None
@@ -91,3 +91,4 @@ class DetailedAnalysisResult:
             **{k: CategoryAnalysis.from_dict(v) if v else None 
                for k, v in category_mapping.items()}
         )
+
