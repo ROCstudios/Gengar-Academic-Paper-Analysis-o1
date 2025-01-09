@@ -11,14 +11,14 @@ from ..data.comprehensive_analysis_errors import ComprehensiveAnalysis, Analysis
 from ..data.detailed_analysis_errors import DetailedAnalysis
 from PyPDF2 import PdfReader
 
-comprehensive_bulk_storage = MongoDBStorage()  
-comprehensive_bulk_storage.test_connection() 
+# comprehensive_bulk_storage = MongoDBStorage()  
+# comprehensive_bulk_storage.test_connection() 
 
-detailed_bulk_storage = MongoDBStorage(collection_name="detailed_analysis")
-detailed_bulk_storage.test_connection()
+# detailed_bulk_storage = MongoDBStorage(collection_name="detailed_analysis")
+# detailed_bulk_storage.test_connection()
 
-upload_storage = MongoDBStorage(collection_name="uploads")
-upload_storage.test_connection()
+# upload_storage = MongoDBStorage(collection_name="uploads")
+# upload_storage.test_connection()
 
 def extract_text_from_pdf(filepath):
     """Extract text from a PDF file.
@@ -40,10 +40,46 @@ def extract_text_from_pdf(filepath):
 
 def get_pdf_analysis(filepath: str, is_multi_prompt: bool = False):
     text = extract_text_from_pdf(filepath)
-    mongo_id = analyze_single_pdf(filepath, text, upload_storage, is_multi_prompt)
-    return get_analysis_by_id(mongo_id)
+    # mongo_id = analyze_single_pdf(filepath, text, upload_storage, is_multi_prompt)
+    # return get_analysis_by_id(mongo_id)
+    return analyze_single_pdf(filepath, text, is_multi_prompt)
 
-def analyze_single_pdf(pdf_name: str, text: str, database: MongoDBStorage, is_multi_prompt: bool = False):
+def analyze_single_pdf(pdf_name: str, text: str, is_multi_prompt: bool = False):
+    if is_multi_prompt:
+        # Perform all types of analysis
+        prompts_and_types = [
+            (LOGICAL_ERROR_PROMPT, "logical"),
+            (METHODICAL_ERROR_PROMPT, "methodical"), 
+            (CALCULATIONL_ERROR_PROMPT, "calculation"),
+            (DATA_ERROR_PROMPT, "data"),
+            (CITATION_ERROR_PROMPT, "citation"),
+            (FORMATTING_ERROR_PROMPT, "formatting"),
+            (PLAGARISM_ERROR_PROMPT, "plagiarism"),
+            (ETHICAL_ERROR_PROMPT, "ethical")
+        ]
+
+        comprehensive_analysis = ComprehensiveAnalysis(pdf_name=pdf_name)
+
+        for prompt, analysis_type in prompts_and_types:
+            completion = chat_with_gpt(prompt=prompt, pdf_content=text)
+            print("****")
+            print(completion)
+            print("****\n")
+
+            result = AnalysisResult.from_json(completion)
+            setattr(comprehensive_analysis, f"{analysis_type}_analysis", result)
+
+        return comprehensive_analysis.to_dict()
+    
+    else:
+        completion = chat_with_gpt(prompt=BIG_BOY_SINGLE_PROMPT, pdf_content=text)
+        
+        print("****")
+        print(completion)
+        print("****\n")
+
+        result = DetailedAnalysis.from_json(pdf_name, completion)
+        return result.to_dict()
     
     if is_multi_prompt:
         # Perform all types of analysis
@@ -95,8 +131,8 @@ def bulk_analyze_pdfs(folder_path, is_multi_prompt: bool = False):
         if file.endswith('.pdf'):
             print(f"Checking {file}")
             # Check if analysis already exists in MongoDB
-            storage = comprehensive_bulk_storage if is_multi_prompt else detailed_bulk_storage
-            existing_analysis = storage.collection.find_one({"pdf_name": file})
+            # storage = comprehensive_bulk_storage if is_multi_prompt else detailed_bulk_storage
+            # existing_analysis = storage.collection.find_one({"pdf_name": file})
             
             # if existing_analysis:
             #     print(f"Analysis for {file} already exists in MongoDB. Skipping...")
@@ -106,49 +142,52 @@ def bulk_analyze_pdfs(folder_path, is_multi_prompt: bool = False):
             pdf_path = os.path.join(folder_path, file)
             text = extract_text_from_pdf(pdf_path)
             
-            mongo_id = analyze_single_pdf(file, text, storage, is_multi_prompt)
+            mongo_id = analyze_single_pdf(file, text, is_multi_prompt)
             print(f"Saved {'comprehensive' if is_multi_prompt else 'detailed'} analysis to MongoDB with ID: {mongo_id}")
 
 def get_analysis_json(pdf_name: str) -> Optional[dict]:
     """Retrieve a specific analysis by PDF name and return it as a JSON/dict object."""
-    result = upload_storage.collection.find_one({"pdf_name": pdf_name})
-    if result:
-        # Remove MongoDB's _id field since it's not JSON serializable
-        result.pop('_id', None)
-        return result
+    # result = upload_storage.collection.find_one({"pdf_name": pdf_name})
+    # if result:
+    #     # Remove MongoDB's _id field since it's not JSON serializable
+    #     result.pop('_id', None)
+    #     return result
     return None
 
 def get_analysis_by_id(mongo_id: str) -> Optional[dict]:
     """Retrieve a specific analysis by MongoDB ID and return it as a JSON/dict object."""
     from bson.objectid import ObjectId
-    result = upload_storage.collection.find_one({"_id": ObjectId(mongo_id)})
-    if result:
-        # Remove MongoDB's _id field since it's not JSON serializable
-        result.pop('_id', None)
-        return result
+    # result = upload_storage.collection.find_one({"_id": ObjectId(mongo_id)})
+    # if result:
+    #     # Remove MongoDB's _id field since it's not JSON serializable
+    #     result.pop('_id', None)
+    #     return result
     return None
 
 def get_all_analyses():
     """Return all documents as a list."""
-    cursor = comprehensive_bulk_storage.collection.find({})
-    return [doc for doc in cursor]
+    # cursor = comprehensive_bulk_storage.collection.find({})
+    # return [doc for doc in cursor]
+    return None
 
 def count_analyses():
     """Count total documents in collection."""
-    return comprehensive_bulk_storage.collection.count_documents({})
+    # return comprehensive_bulk_storage.collection.count_documents({})
+    return None
 
 def print_all_pdf_names():
     """Print just the PDF names of all documents."""
-    cursor = comprehensive_bulk_storage.collection.find({}, {"pdf_name": 1})  # Only retrieve pdf_name field
-    for doc in cursor:
-        print(doc["pdf_name"])
+    # cursor = comprehensive_bulk_storage.collection.find({}, {"pdf_name": 1})  # Only retrieve pdf_name field
+    # for doc in cursor:
+    #     print(doc["pdf_name"])
+    return None
 
 def get_collective_scores() -> dict:
     """
     Queries all analyses and returns a JSON summary of error counts by type.
     Returns a dictionary with error types as keys and their total counts as values.
     """
-    cursor = comprehensive_bulk_storage.collection.find({})
+    # cursor = comprehensive_bulk_storage.collection.find({})
     
     # Initialize counters for each error type
     collective_scores = {
@@ -175,12 +214,12 @@ def get_collective_scores() -> dict:
     }
     
     # Count errors from each document
-    for doc in cursor:
-        for error_type, field_name in analysis_types.items():
-            if 'analyses' in doc and field_name in doc['analyses'] and doc['analyses'][field_name]:
-                analysis = doc['analyses'][field_name]
-                if 'errors' in analysis and isinstance(analysis['errors'], list):
-                    collective_scores[f"{error_type}_errors"] += len(analysis['errors'])
+    # for doc in cursor:
+    #     for error_type, field_name in analysis_types.items():
+    #         if 'analyses' in doc and field_name in doc['analyses'] and doc['analyses'][field_name]:
+    #             analysis = doc['analyses'][field_name]
+    #             if 'errors' in analysis and isinstance(analysis['errors'], list):
+    #                 collective_scores[f"{error_type}_errors"] += len(analysis['errors'])
     
     return collective_scores
 
