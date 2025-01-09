@@ -1,14 +1,14 @@
 import os
-from app.api.mongo import MongoDBStorage
-from app.api.completions import chat_with_gpt, clean_json_string
+from api.mongo import MongoDBStorage
+from api.completions import chat_with_gpt, clean_json_string
 from typing import Optional
-from app.consts.prompts import (
+from consts.prompts import (
     LOGICAL_ERROR_PROMPT, METHODICAL_ERROR_PROMPT,
     CALCULATIONL_ERROR_PROMPT, DATA_ERROR_PROMPT, CITATION_ERROR_PROMPT,
     FORMATTING_ERROR_PROMPT, PLAGARISM_ERROR_PROMPT, ETHICAL_ERROR_PROMPT, BIG_BOY_SINGLE_PROMPT
 )
 from app.data.multi_prompt_analysis_errors import ComprehensiveAnalysis, AnalysisResult
-from app.entry import extract_text_from_pdf
+from entry import extract_text_from_pdf
 
 bulk_storage = MongoDBStorage()  
 bulk_storage.test_connection() 

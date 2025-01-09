@@ -2,7 +2,7 @@ from flask import Flask, Blueprint, request, jsonify
 from werkzeug.utils import secure_filename
 import os
 from PyPDF2 import PdfReader
-from bulk_analysis import get_collective_scores, get_pdf_analysis
+from app.bulk.bulk_analysis import get_collective_scores, get_pdf_analysis
 
 # Define blueprint
 pdf_blueprint = Blueprint('pdf', __name__)

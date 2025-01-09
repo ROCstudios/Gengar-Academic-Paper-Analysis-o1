@@ -1,8 +1,8 @@
 import os
-from app.entry import extract_text_from_pdf
-from dropbox_handler import download_pdfs_from_dropbox
-from completions import chat_with_gpt
-from completions import LOGICAL_ERROR_PROMPT, METHODICAL_ERROR_PROMPT, CALCULATIONL_ERROR_PROMPT, DATA_ERROR_PROMPT, CITATION_ERROR_PROMPT, FORMATTING_ERROR_PROMPT, PLAGARISM_ERROR_PROMPT, ETHICAL_ERROR_PROMPT
+from entry import extract_text_from_pdf
+from api.dropbox_handler import download_pdfs_from_dropbox
+from api.completions import chat_with_gpt
+from api.completions import LOGICAL_ERROR_PROMPT, METHODICAL_ERROR_PROMPT, CALCULATIONL_ERROR_PROMPT, DATA_ERROR_PROMPT, CITATION_ERROR_PROMPT, FORMATTING_ERROR_PROMPT, PLAGARISM_ERROR_PROMPT, ETHICAL_ERROR_PROMPT
 from datetime import datetime
 from dataclasses import dataclass, field
 from typing import List, Optional
