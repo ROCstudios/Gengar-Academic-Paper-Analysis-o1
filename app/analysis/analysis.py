@@ -11,8 +11,11 @@ from ..data.comprehensive_analysis_errors import ComprehensiveAnalysis, Analysis
 from ..data.detailed_analysis_errors import DetailedAnalysis
 from PyPDF2 import PdfReader
 
-bulk_storage = MongoDBStorage()  
-bulk_storage.test_connection() 
+comprehensive_bulk_storage = MongoDBStorage()  
+comprehensive_bulk_storage.test_connection() 
+
+detailed_bulk_storage = MongoDBStorage(collection_name="detailed_analysis")
+detailed_bulk_storage.test_connection()
 
 upload_storage = MongoDBStorage(collection_name="uploads")
 upload_storage.test_connection()
@@ -62,8 +65,8 @@ def analyze_single_pdf(pdf_name: str, text: str, database: MongoDBStorage, is_mu
             print("****")
             print(completion)
             print("****\n")
-            result = AnalysisResult.from_json(completion)
 
+            result = AnalysisResult.from_json(completion)
             setattr(comprehensive_analysis, f"{analysis_type}_analysis", result)
 
         # Save the comprehensive analysis to MongoDB
@@ -71,14 +74,15 @@ def analyze_single_pdf(pdf_name: str, text: str, database: MongoDBStorage, is_mu
         return mongo_id
     
     else:
-        detailed_analysis = DetailedAnalysis(pdf_name=pdf_name)
         completion = chat_with_gpt(prompt=BIG_BOY_SINGLE_PROMPT, pdf_content=text)
+        
         print("****")
         print(completion)
         print("****\n")
-        result = DetailedAnalysis.from_json(completion)
-        setattr(detailed_analysis, "detailed_analysis", result)
-        mongo_id = database.save_detailed_analysis(detailed_analysis)
+
+        result = DetailedAnalysis.from_json(pdf_name, completion)
+
+        mongo_id = database.save_detailed_analysis(result)
         return mongo_id
 
 def bulk_analyze_pdfs(folder_path, is_multi_prompt: bool = False):
@@ -90,23 +94,24 @@ def bulk_analyze_pdfs(folder_path, is_multi_prompt: bool = False):
     for file in os.listdir(folder_path):
         if file.endswith('.pdf'):
             print(f"Checking {file}")
-            
             # Check if analysis already exists in MongoDB
-            existing_analysis = bulk_storage.collection.find_one({"pdf_name": file})
-            if existing_analysis:
-                print(f"Analysis for {file} already exists in MongoDB. Skipping...")
-                continue
+            storage = comprehensive_bulk_storage if is_multi_prompt else detailed_bulk_storage
+            existing_analysis = storage.collection.find_one({"pdf_name": file})
+            
+            # if existing_analysis:
+            #     print(f"Analysis for {file} already exists in MongoDB. Skipping...")
+            #     continue
 
             print(f"Analyzing {file}")
             pdf_path = os.path.join(folder_path, file)
             text = extract_text_from_pdf(pdf_path)
             
-            mongo_id = analyze_single_pdf(file, text, bulk_storage, is_multi_prompt)
-            print(f"Saved comprehensive analysis to MongoDB with ID: {mongo_id}")
+            mongo_id = analyze_single_pdf(file, text, storage, is_multi_prompt)
+            print(f"Saved {'comprehensive' if is_multi_prompt else 'detailed'} analysis to MongoDB with ID: {mongo_id}")
 
 def get_analysis_json(pdf_name: str) -> Optional[dict]:
     """Retrieve a specific analysis by PDF name and return it as a JSON/dict object."""
-    result = bulk_storage.collection.find_one({"pdf_name": pdf_name})
+    result = comprehensive_bulk_storage.collection.find_one({"pdf_name": pdf_name})
     if result:
         # Remove MongoDB's _id field since it's not JSON serializable
         result.pop('_id', None)
@@ -116,7 +121,7 @@ def get_analysis_json(pdf_name: str) -> Optional[dict]:
 def get_analysis_by_id(mongo_id: str) -> Optional[dict]:
     """Retrieve a specific analysis by MongoDB ID and return it as a JSON/dict object."""
     from bson.objectid import ObjectId
-    result = bulk_storage.collection.find_one({"_id": ObjectId(mongo_id)})
+    result = comprehensive_bulk_storage.collection.find_one({"_id": ObjectId(mongo_id)})
     if result:
         # Remove MongoDB's _id field since it's not JSON serializable
         result.pop('_id', None)
@@ -125,16 +130,16 @@ def get_analysis_by_id(mongo_id: str) -> Optional[dict]:
 
 def get_all_analyses():
     """Return all documents as a list."""
-    cursor = bulk_storage.collection.find({})
+    cursor = comprehensive_bulk_storage.collection.find({})
     return [doc for doc in cursor]
 
 def count_analyses():
     """Count total documents in collection."""
-    return bulk_storage.collection.count_documents({})
+    return comprehensive_bulk_storage.collection.count_documents({})
 
 def print_all_pdf_names():
     """Print just the PDF names of all documents."""
-    cursor = bulk_storage.collection.find({}, {"pdf_name": 1})  # Only retrieve pdf_name field
+    cursor = comprehensive_bulk_storage.collection.find({}, {"pdf_name": 1})  # Only retrieve pdf_name field
     for doc in cursor:
         print(doc["pdf_name"])
 
@@ -143,7 +148,7 @@ def get_collective_scores() -> dict:
     Queries all analyses and returns a JSON summary of error counts by type.
     Returns a dictionary with error types as keys and their total counts as values.
     """
-    cursor = bulk_storage.collection.find({})
+    cursor = comprehensive_bulk_storage.collection.find({})
     
     # Initialize counters for each error type
     collective_scores = {
@@ -181,7 +186,7 @@ def get_collective_scores() -> dict:
 
 if __name__ == "__main__":
     #add bulk download pdfs
-    # analyze_pdfs("downloaded_pdfs")
+    bulk_analyze_pdfs("downloaded_pdfs")
     # print(get_analysis_json("A_Balance_for_Fairness:_Fair_Distribution_Utilising_Physics_in_Games_of_Characteristic_Function_Form.pdf"))
-    print(get_collective_scores())
+    # print(get_collective_scores())
 

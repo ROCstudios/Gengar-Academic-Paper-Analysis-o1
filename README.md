@@ -10,3 +10,7 @@
 - Environmental Science: 24%
 - Social Sciences: 8%
 
+Run with
+```
+python -m app.analysis.analysis
+```
