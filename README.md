@@ -171,5 +171,42 @@ python -m app.entry
 ### Running in AWS with Guinicorn
 
 ```
+python app.py --host=0.0.0.0 --port=5000
 gunicorn -b 0.0.0.0:8000 app.entry:app
+```
+
+### Setting up Gunicorn server for constant use
+
+Create/Edit the systemd service file:
+```
+sudo nano /etc/systemd/system/gunicorn.service
+```
+Add this configuration (using your verified working paths):
+```
+[Unit]
+Description=Gunicorn instance for Gengar Paper Analysis
+After=network.target
+
+[Service]
+User=devai
+WorkingDirectory=/home/devai/Gengar-Academic-Paper-Analysis-o1
+Environment="PATH=/home/devai/Gengar-Academic-Paper-Analysis-o1/venv/bin"
+ExecStart=/home/devai/Gengar-Academic-Paper-Analysis-o1/venv/bin/gunicorn -b 0.0.0.0:8000 app.entry:app --workers 3 --timeout 120
+
+[Install]
+WantedBy=multi-user.target
+```
+Enable and start the service:
+```
+# Reload systemd to recognize new service
+sudo systemctl daemon-reload
+
+# Enable service to start on boot
+sudo systemctl enable gunicorn
+
+# Start the service
+sudo systemctl start gunicorn
+
+# Check status
+sudo systemctl status gunicorn
 ```

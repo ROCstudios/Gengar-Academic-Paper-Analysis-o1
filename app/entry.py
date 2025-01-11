@@ -3,7 +3,6 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import os
 from app.analysis.gpt_analysis import get_collective_scores, get_pdf_analysis, get_analysis_by_id
-#eg6b57b9uRmTGTqiij0
 
 # Define blueprint
 pdf_blueprint = Blueprint('pdf', __name__)
@@ -73,4 +72,4 @@ app.register_blueprint(pdf_blueprint, url_prefix='/pdf')
 app.register_blueprint(analysis_blueprint, url_prefix='/analysis')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
