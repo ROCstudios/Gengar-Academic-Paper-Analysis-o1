@@ -24,9 +24,9 @@ const ErrorCard = ({ error }) => (
 );
 
 const SummaryStats = ({ data, errorCategories }) => (
-  <div className="stats shadow">
+  <div className="stats stats-vertical shadow w-full">
     {Object.entries(errorCategories).map(([key, label]) => (
-      <div key={key} className="stat">
+      <div key={key} className="stat w-full">
         <div className="stat-title">{label}</div>
         <div className="stat-value">{data[key].errors.length}</div>
       </div>
@@ -36,7 +36,7 @@ const SummaryStats = ({ data, errorCategories }) => (
 
 const TabButton = ({ isActive, onClick, children }) => (
   <button 
-    className={`tab ${isActive ? 'tab-active' : ''}`}
+    className={`tab flex items-center justify-center ${isActive ? 'tab-active' : ''}`}
     onClick={onClick}
   >
     {children}
@@ -80,6 +80,7 @@ const Analysis = ({ data }) => {
         <TabButton 
           isActive={activeTab === 'summary'}
           onClick={() => setActiveTab('summary')}
+          className="flex items-center justify-center"
         >
           Summary
         </TabButton>
@@ -89,9 +90,7 @@ const Analysis = ({ data }) => {
               key={key}
               isActive={activeTab === key}
               onClick={() => setActiveTab(key)}
-            >
-              {label} ({data[key].errors.length})
-            </TabButton>
+            > {label} </TabButton>
           )
         ))}
       </div>
