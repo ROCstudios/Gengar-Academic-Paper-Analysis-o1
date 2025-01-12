@@ -8,7 +8,7 @@ from app.analysis.gpt_analysis import get_collective_scores, get_pdf_analysis, g
 pdf_blueprint = Blueprint('pdf', __name__)
 analysis_blueprint = Blueprint('analysis', __name__)
 
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = '/tmp/uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
 
 # Ensure the upload folder exists
@@ -72,4 +72,4 @@ app.register_blueprint(pdf_blueprint, url_prefix='/pdf')
 app.register_blueprint(analysis_blueprint, url_prefix='/analysis')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)

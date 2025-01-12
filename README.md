@@ -210,3 +210,23 @@ sudo systemctl start gunicorn
 # Check status
 sudo systemctl status gunicorn
 ```
+
+### Setting up nginx to serve the proxy
+
+```
+sudo yum install nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
+```
+
+### To view logs within your server
+```
+# View Gunicorn service logs
+sudo journalctl -u gunicorn.service
+
+# View last 100 lines
+sudo journalctl -u gunicorn.service -n 100
+
+# Follow logs in real-time (good for debugging)
+sudo journalctl -u gunicorn.service -f
+```
