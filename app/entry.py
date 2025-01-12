@@ -4,6 +4,8 @@ from werkzeug.utils import secure_filename
 import os
 from app.analysis.gpt_analysis import get_collective_scores, get_pdf_analysis, get_analysis_by_id
 
+
+
 # Define blueprint
 pdf_blueprint = Blueprint('pdf', __name__)
 analysis_blueprint = Blueprint('analysis', __name__)
@@ -60,8 +62,7 @@ CORS(app, resources={
     r"/*": {
         "origins": "*",
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization", "Access-Control-Allow-Credentials"],
-        "supports_credentials": True
+        "allow_headers": ["Content-Type", "Authorization"],
     }
 })
 
