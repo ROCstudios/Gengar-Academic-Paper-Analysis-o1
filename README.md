@@ -22,6 +22,8 @@
 
 ### Blueprint Endpoints
 
+http://18.138.195.151/pdf/upload
+
 - /pdf/upload (upload pdfs for json return result)
 - - PDF is file attachement in body
 - - Returns json with id of the pdf
