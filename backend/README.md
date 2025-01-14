@@ -214,38 +214,35 @@ sudo systemctl start gunicorn
 sudo systemctl status gunicorn
 ```
 
-### Setting up Apache to serve the proxy
+### Setting up Nginx to serve the proxy
 
-Here's how to install and set up Apache2 on Amazon Linux:
-First, update your system:
 ```
-sudo yum update
-```
+sudo apt-get install nginx
 
-Install Apache (on Amazon Linux, it's called httpd):
-```
-sudo yum install httpd
-```
+# Start Nginx service
+sudo systemctl start nginx
 
-Start the Apache service:
-```
-sudo systemctl start httpd
-```
+# Enable Nginx to start on boot
+sudo systemctl enable nginx
 
-Enable Apache to start on boot:
-```
-sudo systemctl enable httpd
-```
+# Check status
+sudo systemctl status nginx
 
-Check the status:
-```
-sudo systemctl status httpd
-```
-
-Allow HTTP traffic through the firewall:
-```
+# Allow HTTP traffic (same as Apache since this is firewall level)
 sudo firewall-cmd --permanent --add-service=http
 sudo firewall-cmd --reload
+
+# Test nginx configuration
+sudo nginx -t
+
+# Reload nginx configuration without restart
+sudo nginx -s reload
+
+# Stop nginx
+sudo systemctl stop nginx
+
+# Restart nginx
+sudo systemctl restart nginx
 ```
 
 ### To view logs within your server

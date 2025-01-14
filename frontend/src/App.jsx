@@ -51,7 +51,7 @@ function App() {
       formData.append('file', file)
 
       // Upload file to server
-      const response = await fetch('http://127.0.0.1:8000/pdf/upload', {
+      const response = await fetch('https://devai2.nobleblocks.com/api/pdf/upload', {
         method: 'POST',
         body: formData,
         onUploadProgress: (progressEvent) => {
