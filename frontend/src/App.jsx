@@ -51,7 +51,7 @@ function App() {
       formData.append('file', file)
 
       // Upload file to server
-      const response = await fetch('http://18.138.195.151/pdf/upload', {
+      const response = await fetch('http://127.0.0.1:8000/pdf/upload', {
         method: 'POST',
         body: formData,
         onUploadProgress: (progressEvent) => {

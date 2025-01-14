@@ -23,6 +23,7 @@
 ### Blueprint Endpoints
 
 http://18.138.195.151/pdf/upload
+Locally in the server http://127.0.0.1:8000/pdf/upload
 
 - /pdf/upload (upload pdfs for json return result)
 - - PDF is file attachement in body
@@ -191,9 +192,9 @@ After=network.target
 
 [Service]
 User=devai
-WorkingDirectory=/home/devai/Gengar-Academic-Paper-Analysis-o1
-Environment="PATH=/home/devai/Gengar-Academic-Paper-Analysis-o1/venv/bin"
-ExecStart=/home/devai/Gengar-Academic-Paper-Analysis-o1/venv/bin/gunicorn -b 0.0.0.0:8000 app.entry:app --workers 3 --timeout 120
+WorkingDirectory=/home/devai/Gengar-Academic-Paper-Analysis-backend
+Environment="PATH=/home/devai/Gengar-Academic-Paper-Analysis-backend/venv/bin"
+ExecStart=/home/devai/Gengar-Academic-Paper-Analysis-backend/venv/bin/gunicorn -b 0.0.0.0:8000 app.entry:app --workers 3 --timeout 120
 
 [Install]
 WantedBy=multi-user.target
