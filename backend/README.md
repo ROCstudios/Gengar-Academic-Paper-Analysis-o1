@@ -259,3 +259,27 @@ sudo journalctl -u gunicorn.service -n 100
 # Follow logs in real-time (good for debugging)
 sudo journalctl -u gunicorn.service -f
 ```
+
+### Gettting our client on port 8001
+
+Manage service file for react
+```
+nano /etc/systemd/system/react-app.service
+```
+
+Update the file with the following
+```
+[Unit]
+Description=React instance for Gengar Paper Analysis
+After=network.target
+
+[Service]
+User=devai
+WorkingDirectory=/home/devai/Gengar-Academic-Paper-Analysis-frontend
+Environment=PORT=8001
+ExecStart=/usr/bin/npm start
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
