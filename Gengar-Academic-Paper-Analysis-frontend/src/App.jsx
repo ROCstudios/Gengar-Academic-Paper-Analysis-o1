@@ -8,6 +8,7 @@ function App() {
   const [dragActive, setDragActive] = useState(false)
 
   const [analysisResults, setAnalysisResults] = useState(null)
+  const [error, setError] = useState(null)
 
   // Handle file selection
   const handleFileSelect = (e) => {
@@ -51,7 +52,8 @@ function App() {
       formData.append('file', file)
 
       // Upload file to server
-      const response = await fetch('https://devai2.nobleblocks.com/api/pdf/upload', {
+      // const response = await fetch('https://devai2.nobleblocks.com/api/pdf/upload', {
+      const response = await fetch('http://127.0.0.1:5000/pdf/upload', {
         method: 'POST',
         body: formData,
         onUploadProgress: (progressEvent) => {
@@ -63,8 +65,11 @@ function App() {
       })
 
       if (!response.ok) {
-        throw new Error('Upload failed')
-      }
+        const errorData = await response.json();
+        setError(errorData.error || 'An unknown error occurred');
+        return;
+      } 
+
 
 //       const olddata = `
 // {
@@ -134,7 +139,22 @@ function App() {
 //     "timestamp": "2025-01-12T08:35:36.371711"
 // }`;
 //       const data = JSON.parse(olddata);
-      const data = await response.json()
+      let data;
+      try {
+        const rawResponse = await response.text();
+        // Remove any non-JSON content before the first { and after the last }
+        const cleanedResponse = rawResponse.substring(
+          rawResponse.indexOf('{'), 
+          rawResponse.lastIndexOf('}') + 1
+        );
+        data = JSON.parse(cleanedResponse);
+      } catch (error) {
+        console.error('Error parsing response:', error);
+        data = {
+          error: 'Failed to parse server response',
+          details: error.message
+        };
+      }
       console.log('Upload successful:', data)
       setAnalysisResults(data)
       // Clear file after successful upload
@@ -161,6 +181,14 @@ function App() {
 
       {/* Right File Upload Area - 90% */}
       <div className="w-[80%] p-8">
+          {error && (
+            <div className="alert alert-error mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{error}</span>
+            </div>
+          )}
         <div className="h-full flex items-center justify-center">
           <div className="max-w-xl w-full">
           {analysisResults ? (
