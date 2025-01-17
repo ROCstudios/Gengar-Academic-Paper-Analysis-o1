@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import AnalysisResults from './AnalysisResults'
+import ReactMarkdown from 'react-markdown'
 
 function App() {
   const [file, setFile] = useState(null)
@@ -52,8 +52,8 @@ function App() {
       formData.append('file', file)
 
       // Upload file to server
-      // const response = await fetch('https://devai2.nobleblocks.com/api/pdf/upload', {
-      const response = await fetch('http://127.0.0.1:5000/pdf/upload', {
+      const response = await fetch('https://devai2.nobleblocks.com/api/pdf/upload', {
+      // const response = await fetch('http://127.0.0.1:5000/pdf/upload', {
         method: 'POST',
         body: formData,
         onUploadProgress: (progressEvent) => {
@@ -70,93 +70,19 @@ function App() {
         return;
       } 
 
-
-//       const olddata = `
-// {
-//     "calculation": {
-//         "errors": []
-//     },
-//     "citation": {
-//         "errors": [
-//             {
-//                 "errorCategory": "Citation/Reference Issues",
-//                 "implications": "Invalidates citations as future works cannot be referenced, potentially undermining the credibility of the research.",
-//                 "issue": "References include publications dated in the future (2025).",
-//                 "recommendation": "Update references to include only published works or preprints with available information."
-//             }
-//         ]
-//     },
-//     "data_inconsistencies": {
-//         "errors": []
-//     },
-//     "ethical": {
-//         "errors": [
-//             {
-//                 "errorCategory": "Ethical Concerns",
-//                 "implications": "Lack of transparency regarding potential biases or affiliations that may influence the research.",
-//                 "issue": "Missing declaration of conflicts of interest.",
-//                 "recommendation": "Include a clear conflict of interest statement detailing any affiliations or financial interests relevant to the research."
-//             }
-//         ]
-//     },
-//     "formatting": {
-//         "errors": [
-//             {
-//                 "errorCategory": "Formatting Errors",
-//                 "implications": "Reduces readability and compliance with standard journal formatting guidelines.",
-//                 "issue": "Inconsistent formatting of figure captions and embedded figure descriptions within the text.",
-//                 "recommendation": "Ensure that all figures and their captions are consistently formatted and properly placed according to journal guidelines."
-//             }
-//         ]
-//     },
-//     "logical": {
-//         "errors": []
-//     },
-//     "methodical": {
-//         "errors": [
-//             {
-//                 "errorCategory": "Methodological Errors",
-//                 "implications": "Limits reproducibility and understanding of the methodology.",
-//                 "issue": "Insufficient detail in the data synthesis process.",
-//                 "recommendation": "Provide a more detailed description of the data synthesis modules and processes to enable reproducibility."
-//             }
-//         ]
-//     },
-//     "pdf_name": "/tmp/uploads/URSA-_Understanding_and_Verifying_Chain-of-thought_Reasoning_in_Multimodal_Mathematics.pdf",
-//     "summary": {
-//         "authors": "Ruilin Luo, Zhuofan Zheng, Yifan Wang, Yiyao Yu, Xinzhe Ni, Zicheng Lin, Jin Zeng, Yujiu Yang",
-//         "calculationErrorCount": "0",
-//         "citationErrorCount": "1",
-//         "dataInconsistencyCount": "0",
-//         "errorCount": "4",
-//         "ethicalErrorCount": "1",
-//         "formattingErrorCount": "1",
-//         "logicalErrorCount": "0",
-//         "methodicalErrorCount": "1",
-//         "published": "8 Jan 2025",
-//         "title": "URSA: Understanding and Verifying Chain-of-thought Reasoning in Multimodal Mathematics"
-//     },
-//     "timestamp": "2025-01-12T08:35:36.371711"
-// }`;
-//       const data = JSON.parse(olddata);
-      let data;
+      let cleanedResponse;
       try {
         const rawResponse = await response.text();
-        // Remove any non-JSON content before the first { and after the last }
-        const cleanedResponse = rawResponse.substring(
-          rawResponse.indexOf('{'), 
-          rawResponse.lastIndexOf('}') + 1
-        );
-        data = JSON.parse(cleanedResponse);
+        cleanedResponse = rawResponse.slice(1, -1);
+        console.log('Upload successful:', rawResponse)
+        setAnalysisResults(rawResponse)
       } catch (error) {
         console.error('Error parsing response:', error);
-        data = {
+        cleanedResponse = {
           error: 'Failed to parse server response',
           details: error.message
         };
       }
-      console.log('Upload successful:', data)
-      setAnalysisResults(data)
       // Clear file after successful upload
       setFile(null)
       setUploadProgress(0)
@@ -192,7 +118,11 @@ function App() {
         <div className="h-full flex items-center justify-center">
           <div className="max-w-xl w-full">
           {analysisResults ? (
-            <AnalysisResults data={analysisResults} />
+            <ReactMarkdown>
+              {typeof analysisResults === 'string' 
+                ? analysisResults.slice(1, -1).replaceAll('****', '**\n**').replaceAll('-', '\n-').replaceAll('----', '\n\n\n\n').replaceAll('-### ', '### ').replaceAll('1. ', '\n1. ').replaceAll('2. ', '\n2. ').replaceAll('3. ', '\n3. ').replaceAll('4. ', '\n4. ').replaceAll('5. ', '\n5. ').replaceAll('-#### ', '#### ')
+                : JSON.stringify(analysisResults, null, 2)}
+            </ReactMarkdown>
           ) : (
           <div 
               className={`border-2 border-dashed rounded-lg p-12 text-center

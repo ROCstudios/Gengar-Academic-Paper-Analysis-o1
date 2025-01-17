@@ -78,49 +78,7 @@ def analyze_single_pdf(pdf_name: str, text: str, is_multi_prompt: bool = False):
         print(completion)
         print("****\n")
 
-        result = DetailedAnalysis.from_json(pdf_name, completion)
-        return result.to_dict()
-    
-    if is_multi_prompt:
-        # Perform all types of analysis
-        prompts_and_types = [
-            (LOGICAL_ERROR_PROMPT, "logical"),
-            (METHODICAL_ERROR_PROMPT, "methodical"),
-            (CALCULATIONL_ERROR_PROMPT, "calculation"),
-            (DATA_ERROR_PROMPT, "data"),
-            (CITATION_ERROR_PROMPT, "citation"),
-            (FORMATTING_ERROR_PROMPT, "formatting"),
-            (PLAGARISM_ERROR_PROMPT, "plagiarism"),
-            (ETHICAL_ERROR_PROMPT, "ethical")
-        ]
-
-        comprehensive_analysis = ComprehensiveAnalysis(pdf_name=pdf_name)
-
-        for prompt, analysis_type in prompts_and_types:
-            completion = chat_with_gpt(prompt=prompt, pdf_content=text)
-            print("****")
-            print(completion)
-            print("****\n")
-
-            result = AnalysisResult.from_json(completion)
-            setattr(comprehensive_analysis, f"{analysis_type}_analysis", result)
-
-        # Save the comprehensive analysis to MongoDB
-        mongo_id = database.save_comprehensive_analysis(comprehensive_analysis)
-        return mongo_id
-    
-    else:
-        completion = chat_with_gpt(prompt=BIG_BOY_SINGLE_PROMPT, pdf_content=text)
-        
-        print("****")
-        print(completion)
-        print("****\n")
-
-        result = DetailedAnalysis.from_json(pdf_name, completion)
-
-        mongo_id = database.save_detailed_analysis(result)
-        return mongo_id
-
+        return completion
 def bulk_analyze_pdfs(folder_path, is_multi_prompt: bool = False):
     """Analyze all PDFs in a given folder.
     

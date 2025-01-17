@@ -3,8 +3,13 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import os
 from app.analysis.gpt_analysis import get_collective_scores, get_pdf_analysis, get_analysis_by_id
+import json
+import re
+import logging
+from typing import Union, Dict, List, Any
 
-
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Define blueprint
 pdf_blueprint = Blueprint('pdf', __name__)
@@ -43,17 +48,22 @@ def upload_pdf():
         filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(filepath)
 
-        try:
-            analysis = get_pdf_analysis(filepath)
-            return jsonify(analysis), 200
-        except Exception as e:
-            return jsonify({'error': f'Failed to extract text: {str(e)}'}), 500
-        finally:
-            # Clean up by removing the uploaded file
-            os.remove(filepath)
+        analysis = get_pdf_analysis(filepath)  
+        print("ANALYSIS")
+        print(analysis)
+        return jsonify(analysis), 200
+        # try:
+        
+        # except Exception as e:
+        #     logger.error(f"Failed to process PDF: {str(e)}")
+        #     return jsonify({'error': f'Failed to process PDF: {str(e)}'}), 500
+        
+        # finally:
+        #     # Clean up by removing the uploaded file
+        #     if os.path.exists(filepath):
+        #         os.remove(filepath)
     else:
         return jsonify({'error': 'Invalid file type. Only PDF files are allowed.'}), 400
-
 
 # Create and configure the Flask app
 app = Flask(__name__)
